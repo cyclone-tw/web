@@ -129,19 +129,36 @@ class GoogleDriveService {
   }
 
   // 專門列出資料夾
-  async listFolders(parentFolderId = config.drive.defaultFolderId) {
+  async listFolders(parentFolderId = null) {
     try {
       if (!this.isEnabled) {
         throw new Error('Google Drive 服務未啟用');
       }
 
-      const query = `mimeType='application/vnd.google-apps.folder' and trashed=false`;
+      let query = `mimeType='application/vnd.google-apps.folder' and trashed=false`;
+
+      // 如果有指定父資料夾ID，則列出該資料夾的子資料夾
+      if (parentFolderId) {
+        query += ` and '${parentFolderId}' in parents`;
+      } else {
+        // 沒有指定父資料夾時，列出根目錄的資料夾（排除有父資料夾的）
+        // 或者列出預設資料夾中的子資料夾
+        if (config.drive.defaultFolderId) {
+          query += ` and '${config.drive.defaultFolderId}' in parents`;
+        } else {
+          // 如果沒有設定預設資料夾，則列出真正的根目錄資料夾
+          query += ` and parents in 'root'`;
+        }
+      }
+
+      console.log('查詢資料夾:', query);
       const response = await this.drive.files.list({
-        q: parentFolderId ? `${query} and '${parentFolderId}' in parents` : query,
+        q: query,
         fields: 'files(id, name)',
         orderBy: 'name'
       });
 
+      console.log('找到資料夾:', response.data.files.length);
       return response.data.files;
     } catch (error) {
       console.error('列出資料夾失敗:', error);
