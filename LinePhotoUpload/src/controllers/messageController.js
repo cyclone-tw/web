@@ -265,6 +265,9 @@ async function handleNavigationInput(text, replyToken, client, userId, userState
     case 'selectFolder':
       await handleFolderSelection(text, replyToken, client, userId, userState);
       break;
+    case 'folderOptions':
+      await handleFolderOptions(text, replyToken, client, userId, userState);
+      break;
     case 'inFolder':
       await handleInFolderAction(text, replyToken, client, userId, userState);
       break;
@@ -279,20 +282,31 @@ async function handleNavigationInput(text, replyToken, client, userId, userState
 // 處理選擇現有資料夾
 async function handleSelectExistingFolder(replyToken, client, userId) {
   try {
-    const folders = await googleDriveService.listFolders();
+    const userState = userStateManager.getUserState(userId);
+    const currentFolderId = userState.currentBrowseFolderId;
+    const folders = await googleDriveService.listFolders(currentFolderId);
 
     if (folders.length === 0) {
+      const pathString = userStateManager.getCurrentPathString(userId);
       await client.replyMessage(replyToken, {
         type: 'text',
-        text: '❌ 沒有找到任何資料夾，請先創建一個資料夾。\n\n輸入 "hi" 返回主選單'
+        text: `❌ 在「${pathString}」中沒有找到任何資料夾\n\n輸入 "hi" 返回主選單`
       });
       return;
     }
 
-    let folderListText = '📁 現有資料夾：\n';
+    const pathString = userStateManager.getCurrentPathString(userId);
+    let folderListText = `📁 當前位置：${pathString}\n\n`;
+
+    // 如果不在根目錄，顯示返回上一層選項
+    if (userState.navigationPath.length > 0) {
+      folderListText += '⬆️ 0. 返回上一層\n';
+    }
+
     folders.forEach((folder, index) => {
-      folderListText += `${index + 1}. ${folder.name}\n`;
+      folderListText += `📂 ${index + 1}. ${folder.name}\n`;
     });
+
     folderListText += '\n請選擇資料夾 (輸入數字)';
 
     userStateManager.setNavigationState(userId, 'selectFolder', folders);
@@ -312,31 +326,43 @@ async function handleSelectExistingFolder(replyToken, client, userId) {
 
 // 處理資料夾選擇
 async function handleFolderSelection(text, replyToken, client, userId, userState) {
-  const folderIndex = parseInt(text) - 1;
+  const selection = parseInt(text);
+
+  // 處理返回上一層
+  if (selection === 0 && userState.navigationPath.length > 0) {
+    userStateManager.goBack(userId);
+    await handleSelectExistingFolder(replyToken, client, userId);
+    return;
+  }
+
+  const folderIndex = selection - 1;
 
   if (isNaN(folderIndex) || folderIndex < 0 || folderIndex >= userState.folderList.length) {
     await client.replyMessage(replyToken, {
       type: 'text',
-      text: '❌ 無效的選擇，請輸入正確的數字。\n\n輸入 "hi" 返回主選單'
+      text: '❌ 無效的選擇，請輸入正確的數字。'
     });
     return;
   }
 
   const selectedFolder = userState.folderList[folderIndex];
-  userStateManager.setCurrentFolder(userId, selectedFolder.name, selectedFolder.id);
-  userStateManager.setNavigationState(userId, 'inFolder');
 
-  const inFolderText = `✅ 已進入「${selectedFolder.name}」資料夾
+  // 顯示資料夾選項：進入瀏覽 or 設為上傳目標
+  userStateManager.setNavigationState(userId, 'folderOptions', null, selectedFolder);
 
-1️⃣ 在此上傳照片
-2️⃣ 創建子資料夾
-3️⃣ 返回主選單
+  const pathString = userStateManager.getCurrentPathString(userId);
+  const optionText = `📂 已選擇「${selectedFolder.name}」
+📍 位置：${pathString}
+
+1️⃣ 進入此資料夾瀏覽
+2️⃣ 設為照片上傳目標
+3️⃣ 返回資料夾列表
 
 請選擇操作 (輸入數字)`;
 
   await client.replyMessage(replyToken, {
     type: 'text',
-    text: inFolderText
+    text: optionText
   });
 }
 
@@ -377,6 +403,48 @@ async function handleStartCreateFolder(replyToken, client, userId) {
   });
 }
 
+// 處理資料夾選項
+async function handleFolderOptions(text, replyToken, client, userId, userState) {
+  const selectedFolder = userState.pendingAction;
+
+  switch (text) {
+    case '1': // 進入此資料夾瀏覽
+      userStateManager.enterFolder(userId, selectedFolder.id, selectedFolder.name);
+      await handleSelectExistingFolder(replyToken, client, userId);
+      break;
+
+    case '2': // 設為照片上傳目標
+      userStateManager.setCurrentFolder(userId, selectedFolder.name, selectedFolder.id);
+      userStateManager.setNavigationState(userId, 'inFolder');
+
+      const pathString = userStateManager.getCurrentPathString(userId);
+      const inFolderText = `✅ 已設定「${selectedFolder.name}」為上傳目標
+📍 位置：${pathString}
+
+1️⃣ 在此上傳照片
+2️⃣ 創建子資料夾
+3️⃣ 返回主選單
+
+請選擇操作 (輸入數字)`;
+
+      await client.replyMessage(replyToken, {
+        type: 'text',
+        text: inFolderText
+      });
+      break;
+
+    case '3': // 返回資料夾列表
+      await handleSelectExistingFolder(replyToken, client, userId);
+      break;
+
+    default:
+      await client.replyMessage(replyToken, {
+        type: 'text',
+        text: '❌ 無效的選擇，請輸入 1、2 或 3'
+      });
+  }
+}
+
 // 處理創建資料夾名稱輸入
 async function handleCreateFolderName(text, replyToken, client, userId) {
   const folderName = text.trim();
@@ -390,15 +458,16 @@ async function handleCreateFolderName(text, replyToken, client, userId) {
   }
 
   const userState = userStateManager.getUserState(userId);
-  const parentFolderId = userState.currentFolderId;
+  const parentFolderId = userState.currentBrowseFolderId || userState.currentFolderId;
 
   try {
     const newFolder = await googleDriveService.createFolder(folderName, parentFolderId);
     userStateManager.setCurrentFolder(userId, folderName, newFolder.id);
     userStateManager.setNavigationState(userId, 'inFolder');
 
+    const pathString = userStateManager.getCurrentPathString(userId);
     const successText = `✅ 已創建並進入「${folderName}」資料夾
-${parentFolderId ? `位置：${userState.currentFolder} > ${folderName}` : ''}
+📍 位置：${pathString}
 
 1️⃣ 在此上傳照片
 2️⃣ 創建子資料夾
