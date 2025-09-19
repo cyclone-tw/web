@@ -1,5 +1,5 @@
 import express from 'express';
-import { middleware, Client } from '@line/bot-sdk';
+import { middleware, Client, SignatureValidationFailed, JSONParseError } from '@line/bot-sdk';
 import { config } from '../config/config.js';
 import { handleMessage } from './controllers/messageController.js';
 
@@ -22,48 +22,19 @@ try {
 // 設定信任代理
 app.set('trust proxy', true);
 
-// 中介軟體
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 // 增加請求日誌
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
-// Line Bot Webhook - 處理反向代理問題
-app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
+// Line Bot Webhook - 使用官方 SDK 中介軟體進行簽名驗證
+app.post('/webhook', middleware(lineConfig), (req, res) => {
   try {
-    // 重建正確的簽名驗證
-    const signature = req.get('x-line-signature');
-    const body = req.body;
+    console.log('收到 Webhook 請求，簽名驗證通過');
+    console.log('Events:', req.body.events);
 
-    console.log('收到 Webhook 請求');
-    console.log('Headers:', req.headers);
-    console.log('Raw Body length:', body.length);
-    console.log('Signature:', signature);
-
-    // 手動進行簽名驗證
-    const crypto = require('crypto');
-    const expectedSignature = crypto
-      .createHmac('SHA256', config.line.channelSecret)
-      .update(body)
-      .digest('base64');
-
-    console.log('Expected signature:', expectedSignature);
-    console.log('Received signature:', signature);
-
-    if (signature !== expectedSignature) {
-      console.error('簽名驗證失敗');
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    // 解析 JSON
-    const parsedBody = JSON.parse(body.toString());
-    console.log('Parsed Body:', parsedBody);
-
-    const events = parsedBody.events;
+    const events = req.body.events;
 
     if (!events || events.length === 0) {
       console.log('沒有事件需要處理');
@@ -113,8 +84,16 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 錯誤處理中介軟體
+// Line Bot SDK 錯誤處理中介軟體
 app.use((error, req, res, next) => {
+  if (error instanceof SignatureValidationFailed) {
+    console.error('Line Bot 簽名驗證失敗:', error);
+    return res.status(401).send('Signature validation failed');
+  } else if (error instanceof JSONParseError) {
+    console.error('Line Bot JSON 解析錯誤:', error);
+    return res.status(400).send('JSON parse error');
+  }
+
   console.error('應用程式錯誤:', error);
   res.status(500).json({
     error: 'Internal Server Error',
