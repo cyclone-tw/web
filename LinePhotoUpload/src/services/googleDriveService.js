@@ -127,6 +127,27 @@ class GoogleDriveService {
       throw error;
     }
   }
+
+  // 專門列出資料夾
+  async listFolders(parentFolderId = config.drive.defaultFolderId) {
+    try {
+      if (!this.isEnabled) {
+        throw new Error('Google Drive 服務未啟用');
+      }
+
+      const query = `mimeType='application/vnd.google-apps.folder' and trashed=false`;
+      const response = await this.drive.files.list({
+        q: parentFolderId ? `${query} and '${parentFolderId}' in parents` : query,
+        fields: 'files(id, name)',
+        orderBy: 'name'
+      });
+
+      return response.data.files;
+    } catch (error) {
+      console.error('列出資料夾失敗:', error);
+      throw error;
+    }
+  }
 }
 
 // 建立服務實例

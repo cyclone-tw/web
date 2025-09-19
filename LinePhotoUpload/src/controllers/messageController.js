@@ -50,8 +50,30 @@ async function handleUserMessage(event, client, userId) {
 async function handleTextMessage(text, replyToken, client, userId) {
   const userState = userStateManager.getUserState(userId);
 
-  // 指令處理
-  if (text.startsWith('建立資料夾：')) {
+  // 導航狀態處理
+  if (userState.navigationState !== 'main') {
+    await handleNavigationInput(text, replyToken, client, userId, userState);
+    return;
+  }
+
+  // 主選單指令處理
+  if (text === 'hi' || text === 'Hi' || text === 'HI') {
+    await showMainMenu(replyToken, client, userId);
+  }
+  else if (text === '1') {
+    await handleSelectExistingFolder(replyToken, client, userId);
+  }
+  else if (text === '2') {
+    await handleStartCreateFolder(replyToken, client, userId);
+  }
+  else if (text === '3') {
+    await handleStatus(replyToken, client, userId);
+  }
+  else if (text === '4') {
+    await handleHelp(replyToken, client);
+  }
+  // 舊的指令處理（向後相容）
+  else if (text.startsWith('建立資料夾：')) {
     const folderName = text.replace('建立資料夾：', '').trim();
     await handleCreateFolder(folderName, replyToken, client, userId);
   }
@@ -74,7 +96,7 @@ async function handleTextMessage(text, replyToken, client, userId) {
   else {
     await client.replyMessage(replyToken, {
       type: 'text',
-      text: '我不太了解您的指令。輸入「說明」查看可用指令。'
+      text: '輸入 "hi" 開始使用，或輸入「說明」查看指令。'
     });
   }
 }
@@ -211,10 +233,189 @@ async function handleFollow(event, client, userId) {
 • 批次命名照片
 • 選擇原始或壓縮模式
 
-輸入「說明」查看詳細使用方式！`;
+輸入 "hi" 開始使用！`;
 
   await client.replyMessage(event.replyToken, {
     type: 'text',
     text: welcomeText
   });
+}
+
+// 顯示主選單
+async function showMainMenu(replyToken, client, userId) {
+  userStateManager.resetToMain(userId);
+
+  const menuText = `👋 請選擇操作：
+1️⃣ 選擇現有資料夾
+2️⃣ 創建新資料夾
+3️⃣ 查看狀態
+4️⃣ 說明
+
+請輸入數字選擇`;
+
+  await client.replyMessage(replyToken, {
+    type: 'text',
+    text: menuText
+  });
+}
+
+// 處理導航輸入
+async function handleNavigationInput(text, replyToken, client, userId, userState) {
+  switch (userState.navigationState) {
+    case 'selectFolder':
+      await handleFolderSelection(text, replyToken, client, userId, userState);
+      break;
+    case 'inFolder':
+      await handleInFolderAction(text, replyToken, client, userId, userState);
+      break;
+    case 'createFolder':
+      await handleCreateFolderName(text, replyToken, client, userId);
+      break;
+    default:
+      await showMainMenu(replyToken, client, userId);
+  }
+}
+
+// 處理選擇現有資料夾
+async function handleSelectExistingFolder(replyToken, client, userId) {
+  try {
+    const folders = await googleDriveService.listFolders();
+
+    if (folders.length === 0) {
+      await client.replyMessage(replyToken, {
+        type: 'text',
+        text: '❌ 沒有找到任何資料夾，請先創建一個資料夾。\n\n輸入 "hi" 返回主選單'
+      });
+      return;
+    }
+
+    let folderListText = '📁 現有資料夾：\n';
+    folders.forEach((folder, index) => {
+      folderListText += `${index + 1}. ${folder.name}\n`;
+    });
+    folderListText += '\n請選擇資料夾 (輸入數字)';
+
+    userStateManager.setNavigationState(userId, 'selectFolder', folders);
+
+    await client.replyMessage(replyToken, {
+      type: 'text',
+      text: folderListText
+    });
+  } catch (error) {
+    console.error('獲取資料夾列表失敗:', error);
+    await client.replyMessage(replyToken, {
+      type: 'text',
+      text: '❌ 獲取資料夾列表失敗，請稍後再試。\n\n輸入 "hi" 返回主選單'
+    });
+  }
+}
+
+// 處理資料夾選擇
+async function handleFolderSelection(text, replyToken, client, userId, userState) {
+  const folderIndex = parseInt(text) - 1;
+
+  if (isNaN(folderIndex) || folderIndex < 0 || folderIndex >= userState.folderList.length) {
+    await client.replyMessage(replyToken, {
+      type: 'text',
+      text: '❌ 無效的選擇，請輸入正確的數字。\n\n輸入 "hi" 返回主選單'
+    });
+    return;
+  }
+
+  const selectedFolder = userState.folderList[folderIndex];
+  userStateManager.setCurrentFolder(userId, selectedFolder.name, selectedFolder.id);
+  userStateManager.setNavigationState(userId, 'inFolder');
+
+  const inFolderText = `✅ 已進入「${selectedFolder.name}」資料夾
+
+1️⃣ 在此上傳照片
+2️⃣ 創建子資料夾
+3️⃣ 返回主選單
+
+請選擇操作 (輸入數字)`;
+
+  await client.replyMessage(replyToken, {
+    type: 'text',
+    text: inFolderText
+  });
+}
+
+// 處理資料夾內操作
+async function handleInFolderAction(text, replyToken, client, userId, userState) {
+  switch (text) {
+    case '1':
+      await client.replyMessage(replyToken, {
+        type: 'text',
+        text: `📸 已準備好接收照片！\n當前資料夾：${userState.currentFolder}\n\n請直接傳送照片即可自動上傳`
+      });
+      break;
+    case '2':
+      userStateManager.setNavigationState(userId, 'createFolder');
+      await client.replyMessage(replyToken, {
+        type: 'text',
+        text: `📝 在「${userState.currentFolder}」中創建子資料夾\n\n請輸入新資料夾名稱：`
+      });
+      break;
+    case '3':
+      await showMainMenu(replyToken, client, userId);
+      break;
+    default:
+      await client.replyMessage(replyToken, {
+        type: 'text',
+        text: '❌ 無效的選擇，請輸入 1、2 或 3'
+      });
+  }
+}
+
+// 開始創建資料夾流程
+async function handleStartCreateFolder(replyToken, client, userId) {
+  userStateManager.setNavigationState(userId, 'createFolder');
+
+  await client.replyMessage(replyToken, {
+    type: 'text',
+    text: '📝 請輸入新資料夾名稱：'
+  });
+}
+
+// 處理創建資料夾名稱輸入
+async function handleCreateFolderName(text, replyToken, client, userId) {
+  const folderName = text.trim();
+
+  if (!folderName) {
+    await client.replyMessage(replyToken, {
+      type: 'text',
+      text: '❌ 資料夾名稱不能為空，請重新輸入：'
+    });
+    return;
+  }
+
+  const userState = userStateManager.getUserState(userId);
+  const parentFolderId = userState.currentFolderId;
+
+  try {
+    const newFolder = await googleDriveService.createFolder(folderName, parentFolderId);
+    userStateManager.setCurrentFolder(userId, folderName, newFolder.id);
+    userStateManager.setNavigationState(userId, 'inFolder');
+
+    const successText = `✅ 已創建並進入「${folderName}」資料夾
+${parentFolderId ? `位置：${userState.currentFolder} > ${folderName}` : ''}
+
+1️⃣ 在此上傳照片
+2️⃣ 創建子資料夾
+3️⃣ 返回主選單
+
+請選擇操作 (輸入數字)`;
+
+    await client.replyMessage(replyToken, {
+      type: 'text',
+      text: successText
+    });
+  } catch (error) {
+    console.error('創建資料夾失敗:', error);
+    await client.replyMessage(replyToken, {
+      type: 'text',
+      text: `❌ 創建資料夾失敗：${error.message}\n\n輸入 "hi" 返回主選單`
+    });
+    userStateManager.resetToMain(userId);
+  }
 }

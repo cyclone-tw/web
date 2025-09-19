@@ -14,6 +14,10 @@ class UserStateManager {
         mode: 'compressed', // 預設為一般模式
         photoCount: 0,
         createdAt: new Date(),
+        // 導航狀態
+        navigationState: 'main', // main, selectFolder, inFolder, createFolder
+        folderList: null, // 快取資料夾清單
+        pendingAction: null, // 待執行的動作
       });
     }
     return this.userStates.get(userId);
@@ -66,6 +70,24 @@ class UserStateManager {
   // 清除用戶狀態
   clearUserState(userId) {
     this.userStates.delete(userId);
+  }
+
+  // 設定導航狀態
+  setNavigationState(userId, state, folderList = null, pendingAction = null) {
+    const userState = this.getUserState(userId);
+    userState.navigationState = state;
+    if (folderList !== null) userState.folderList = folderList;
+    if (pendingAction !== null) userState.pendingAction = pendingAction;
+    this.userStates.set(userId, userState);
+  }
+
+  // 重設到主選單
+  resetToMain(userId) {
+    const state = this.getUserState(userId);
+    state.navigationState = 'main';
+    state.folderList = null;
+    state.pendingAction = null;
+    this.userStates.set(userId, state);
   }
 
   // 取得所有用戶狀態（用於調試）
