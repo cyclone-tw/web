@@ -19,6 +19,9 @@ try {
   console.error('Line Bot Client 初始化失敗:', error);
 }
 
+// 設定信任代理
+app.set('trust proxy', true);
+
 // 中介軟體
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,32 +32,60 @@ app.use((req, res, next) => {
   next();
 });
 
-// Line Bot Webhook - 增加更詳細的錯誤處理
-app.post('/webhook', (req, res, next) => {
-  // 先檢查基本的請求
-  console.log('收到 Webhook 請求');
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-
-  // 使用 Line 中介軟體
-  middleware(lineConfig)(req, res, next);
-}, async (req, res) => {
+// Line Bot Webhook - 處理反向代理問題
+app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
   try {
-    const events = req.body.events;
+    // 重建正確的簽名驗證
+    const signature = req.get('x-line-signature');
+    const body = req.body;
+
+    console.log('收到 Webhook 請求');
+    console.log('Headers:', req.headers);
+    console.log('Raw Body length:', body.length);
+    console.log('Signature:', signature);
+
+    // 手動進行簽名驗證
+    const crypto = require('crypto');
+    const expectedSignature = crypto
+      .createHmac('SHA256', config.line.channelSecret)
+      .update(body)
+      .digest('base64');
+
+    console.log('Expected signature:', expectedSignature);
+    console.log('Received signature:', signature);
+
+    if (signature !== expectedSignature) {
+      console.error('簽名驗證失敗');
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // 解析 JSON
+    const parsedBody = JSON.parse(body.toString());
+    console.log('Parsed Body:', parsedBody);
+
+    const events = parsedBody.events;
 
     if (!events || events.length === 0) {
       console.log('沒有事件需要處理');
       return res.status(200).end();
     }
 
+    // 處理事件
     const promises = events.map(async (event) => {
       console.log('處理事件:', event);
       return await handleMessage(event, client);
     });
 
-    await Promise.all(promises);
-    console.log('所有事件處理完成');
-    res.status(200).end();
+    Promise.all(promises)
+      .then(() => {
+        console.log('所有事件處理完成');
+        res.status(200).end();
+      })
+      .catch((error) => {
+        console.error('事件處理錯誤:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      });
+
   } catch (error) {
     console.error('Webhook 處理錯誤:', error);
     console.error('錯誤堆疊:', error.stack);
