@@ -56,12 +56,18 @@ async function handleTextMessage(text, replyToken, client, userId) {
     return;
   }
 
+  // 通用指令處理
+  if (text === 'bye' || text === 'Bye' || text === 'BYE') {
+    await showMainMenu(replyToken, client, userId);
+    return;
+  }
+
   // 主選單指令處理
   if (text === 'hi' || text === 'Hi' || text === 'HI') {
     await showMainMenu(replyToken, client, userId);
   }
   else if (text === '1') {
-    await handleSelectExistingFolder(replyToken, client, userId);
+    await handleBrowseFolders(replyToken, client, userId);
   }
   else if (text === '2') {
     await handleStartCreateFolder(replyToken, client, userId);
@@ -246,11 +252,12 @@ async function showMainMenu(replyToken, client, userId) {
   userStateManager.resetToMain(userId);
 
   const menuText = `👋 請選擇操作：
-1️⃣ 選擇現有資料夾
+1️⃣ 瀏覽資料夾
 2️⃣ 創建新資料夾
 3️⃣ 查看狀態
 4️⃣ 說明
 
+💡 任何時候輸入 "bye" 可回到主選單
 請輸入數字選擇`;
 
   await client.replyMessage(replyToken, {
@@ -261,9 +268,15 @@ async function showMainMenu(replyToken, client, userId) {
 
 // 處理導航輸入
 async function handleNavigationInput(text, replyToken, client, userId, userState) {
+  // 通用 bye 指令
+  if (text === 'bye' || text === 'Bye' || text === 'BYE') {
+    await showMainMenu(replyToken, client, userId);
+    return;
+  }
+
   switch (userState.navigationState) {
-    case 'selectFolder':
-      await handleFolderSelection(text, replyToken, client, userId, userState);
+    case 'browseFolder':
+      await handleFolderBrowsing(text, replyToken, client, userId, userState);
       break;
     case 'folderOptions':
       await handleFolderOptions(text, replyToken, client, userId, userState);
@@ -279,8 +292,8 @@ async function handleNavigationInput(text, replyToken, client, userId, userState
   }
 }
 
-// 處理選擇現有資料夾
-async function handleSelectExistingFolder(replyToken, client, userId) {
+// 處理瀏覽資料夾
+async function handleBrowseFolders(replyToken, client, userId) {
   try {
     const userState = userStateManager.getUserState(userId);
     const currentFolderId = userState.currentBrowseFolderId;
@@ -290,7 +303,7 @@ async function handleSelectExistingFolder(replyToken, client, userId) {
       const pathString = userStateManager.getCurrentPathString(userId);
       await client.replyMessage(replyToken, {
         type: 'text',
-        text: `❌ 在「${pathString}」中沒有找到任何資料夾\n\n輸入 "hi" 返回主選單`
+        text: `❌ 在「${pathString}」中沒有找到任何資料夾\n\n輸入 "bye" 返回主選單`
       });
       return;
     }
@@ -307,9 +320,9 @@ async function handleSelectExistingFolder(replyToken, client, userId) {
       folderListText += `📂 ${index + 1}. ${folder.name}\n`;
     });
 
-    folderListText += '\n請選擇資料夾 (輸入數字)';
+    folderListText += '\n💡 輸入 "bye" 可回到主選單\n請選擇資料夾 (輸入數字)';
 
-    userStateManager.setNavigationState(userId, 'selectFolder', folders);
+    userStateManager.setNavigationState(userId, 'browseFolder', folders);
 
     await client.replyMessage(replyToken, {
       type: 'text',
@@ -319,19 +332,19 @@ async function handleSelectExistingFolder(replyToken, client, userId) {
     console.error('獲取資料夾列表失敗:', error);
     await client.replyMessage(replyToken, {
       type: 'text',
-      text: '❌ 獲取資料夾列表失敗，請稍後再試。\n\n輸入 "hi" 返回主選單'
+      text: '❌ 獲取資料夾列表失敗，請稍後再試。\n\n輸入 "bye" 返回主選單'
     });
   }
 }
 
-// 處理資料夾選擇
-async function handleFolderSelection(text, replyToken, client, userId, userState) {
+// 處理資料夾瀏覽
+async function handleFolderBrowsing(text, replyToken, client, userId, userState) {
   const selection = parseInt(text);
 
   // 處理返回上一層
   if (selection === 0 && userState.navigationPath.length > 0) {
     userStateManager.goBack(userId);
-    await handleSelectExistingFolder(replyToken, client, userId);
+    await handleBrowseFolders(replyToken, client, userId);
     return;
   }
 
@@ -358,6 +371,7 @@ async function handleFolderSelection(text, replyToken, client, userId, userState
 2️⃣ 設為照片上傳目標
 3️⃣ 返回資料夾列表
 
+💡 輸入 "bye" 可回到主選單
 請選擇操作 (輸入數字)`;
 
   await client.replyMessage(replyToken, {
@@ -372,14 +386,14 @@ async function handleInFolderAction(text, replyToken, client, userId, userState)
     case '1':
       await client.replyMessage(replyToken, {
         type: 'text',
-        text: `📸 已準備好接收照片！\n當前資料夾：${userState.currentFolder}\n\n請直接傳送照片即可自動上傳`
+        text: `📸 已準備好接收照片！\n當前資料夾：${userState.currentFolder}\n\n請直接傳送照片即可自動上傳\n💡 輸入 "bye" 可回到主選單`
       });
       break;
     case '2':
       userStateManager.setNavigationState(userId, 'createFolder');
       await client.replyMessage(replyToken, {
         type: 'text',
-        text: `📝 在「${userState.currentFolder}」中創建子資料夾\n\n請輸入新資料夾名稱：`
+        text: `📝 在「${userState.currentFolder}」中創建子資料夾\n\n請輸入新資料夾名稱：\n💡 輸入 "bye" 可回到主選單`
       });
       break;
     case '3':
@@ -399,7 +413,7 @@ async function handleStartCreateFolder(replyToken, client, userId) {
 
   await client.replyMessage(replyToken, {
     type: 'text',
-    text: '📝 請輸入新資料夾名稱：'
+    text: '📝 請輸入新資料夾名稱：\n💡 輸入 "bye" 可回到主選單'
   });
 }
 
@@ -410,7 +424,7 @@ async function handleFolderOptions(text, replyToken, client, userId, userState) 
   switch (text) {
     case '1': // 進入此資料夾瀏覽
       userStateManager.enterFolder(userId, selectedFolder.id, selectedFolder.name);
-      await handleSelectExistingFolder(replyToken, client, userId);
+      await handleBrowseFolders(replyToken, client, userId);
       break;
 
     case '2': // 設為照片上傳目標
@@ -425,6 +439,7 @@ async function handleFolderOptions(text, replyToken, client, userId, userState) 
 2️⃣ 創建子資料夾
 3️⃣ 返回主選單
 
+💡 輸入 "bye" 可回到主選單
 請選擇操作 (輸入數字)`;
 
       await client.replyMessage(replyToken, {
@@ -434,7 +449,7 @@ async function handleFolderOptions(text, replyToken, client, userId, userState) 
       break;
 
     case '3': // 返回資料夾列表
-      await handleSelectExistingFolder(replyToken, client, userId);
+      await handleBrowseFolders(replyToken, client, userId);
       break;
 
     default:
