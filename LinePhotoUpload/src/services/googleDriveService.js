@@ -4,131 +4,130 @@ import fs from 'fs-extra';
 
 class GoogleDriveService {
   constructor() {
-    this.oauth2Client = new google.auth.OAuth2(
-      config.google.clientId,
-      config.google.clientSecret,
-      config.google.redirectUri
-    );
+    try {
+      // 檢查必要的環境變數
+      if (!config.google.clientId || !config.google.clientSecret || !config.google.refreshToken) {
+        console.warn('Google Drive API 環境變數未完整設定，某些功能可能無法使用');
+        this.isEnabled = false;
+        return;
+      }
 
-    // 設定重新整理權杖
-    this.oauth2Client.setCredentials({
-      refresh_token: config.google.refreshToken
-    });
+      this.oauth2Client = new google.auth.OAuth2(
+        config.google.clientId,
+        config.google.clientSecret,
+        config.google.redirectUri
+      );
 
-    this.drive = google.drive({ version: 'v3', auth: this.oauth2Client });
+      // 設定重新整理權杖
+      this.oauth2Client.setCredentials({
+        refresh_token: config.google.refreshToken
+      });
+
+      this.drive = google.drive({ version: 'v3', auth: this.oauth2Client });
+      this.isEnabled = true;
+      console.log('Google Drive 服務初始化成功');
+    } catch (error) {
+      console.error('Google Drive 服務初始化失敗:', error);
+      this.isEnabled = false;
+    }
   }
 
   // 建立資料夾
   async createFolder(folderName, parentFolderId = config.drive.defaultFolderId) {
     try {
+      if (!this.isEnabled) {
+        throw new Error('Google Drive 服務未啟用');
+      }
+
       const fileMetadata = {
         name: folderName,
         mimeType: 'application/vnd.google-apps.folder',
+        parents: parentFolderId ? [parentFolderId] : undefined
       };
-
-      if (parentFolderId) {
-        fileMetadata.parents = [parentFolderId];
-      }
 
       const response = await this.drive.files.create({
         resource: fileMetadata,
-        fields: 'id',
+        fields: 'id, name'
       });
 
-      console.log(`資料夾已建立，ID: ${response.data.id}`);
-      return response.data.id;
+      console.log('資料夾建立成功:', response.data);
+      return response.data;
     } catch (error) {
-      console.error('建立資料夾錯誤:', error);
-      throw new Error(`無法建立資料夾：${error.message}`);
+      console.error('建立資料夾失敗:', error);
+      throw error;
     }
   }
 
   // 上傳檔案
-  async uploadFile(filePath, fileName, folderId) {
+  async uploadFile(filePath, fileName, folderId = config.drive.defaultFolderId) {
     try {
+      if (!this.isEnabled) {
+        throw new Error('Google Drive 服務未啟用');
+      }
+
       const fileMetadata = {
         name: fileName,
+        parents: folderId ? [folderId] : undefined
       };
-
-      if (folderId) {
-        fileMetadata.parents = [folderId];
-      }
 
       const media = {
         mimeType: 'image/jpeg',
-        body: fs.createReadStream(filePath),
+        body: fs.createReadStream(filePath)
       };
 
       const response = await this.drive.files.create({
         resource: fileMetadata,
         media: media,
-        fields: 'id,name,size',
+        fields: 'id, name, webViewLink'
       });
 
-      console.log(`檔案已上傳: ${fileName}, ID: ${response.data.id}`);
-      return {
-        fileId: response.data.id,
-        fileName: response.data.name,
-        size: response.data.size,
-      };
+      console.log('檔案上傳成功:', response.data);
+      return response.data;
     } catch (error) {
-      console.error('上傳檔案錯誤:', error);
-      throw new Error(`無法上傳檔案：${error.message}`);
+      console.error('檔案上傳失敗:', error);
+      throw error;
     }
   }
 
   // 檢查資料夾是否存在
   async checkFolderExists(folderName, parentFolderId = config.drive.defaultFolderId) {
     try {
-      let query = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and trashed=false`;
-
-      if (parentFolderId) {
-        query += ` and '${parentFolderId}' in parents`;
+      if (!this.isEnabled) {
+        return null;
       }
 
+      const query = `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
       const response = await this.drive.files.list({
-        q: query,
-        fields: 'files(id, name)',
+        q: parentFolderId ? `${query} and '${parentFolderId}' in parents` : query,
+        fields: 'files(id, name)'
       });
 
       return response.data.files.length > 0 ? response.data.files[0] : null;
     } catch (error) {
-      console.error('檢查資料夾錯誤:', error);
-      throw new Error(`無法檢查資料夾：${error.message}`);
+      console.error('檢查資料夾失敗:', error);
+      return null;
     }
   }
 
   // 列出資料夾內容
-  async listFiles(folderId) {
+  async listFiles(folderId = config.drive.defaultFolderId) {
     try {
+      if (!this.isEnabled) {
+        throw new Error('Google Drive 服務未啟用');
+      }
+
       const response = await this.drive.files.list({
-        q: `'${folderId}' in parents and trashed=false`,
-        fields: 'files(id, name, mimeType, size, modifiedTime)',
-        orderBy: 'modifiedTime desc',
+        q: folderId ? `'${folderId}' in parents and trashed=false` : 'trashed=false',
+        fields: 'files(id, name, mimeType, size, createdTime)'
       });
 
       return response.data.files;
     } catch (error) {
-      console.error('列出檔案錯誤:', error);
-      throw new Error(`無法列出檔案：${error.message}`);
-    }
-  }
-
-  // 取得檔案資訊
-  async getFileInfo(fileId) {
-    try {
-      const response = await this.drive.files.get({
-        fileId: fileId,
-        fields: 'id, name, size, mimeType, modifiedTime, parents',
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('取得檔案資訊錯誤:', error);
-      throw new Error(`無法取得檔案資訊：${error.message}`);
+      console.error('列出檔案失敗:', error);
+      throw error;
     }
   }
 }
 
-// 建立單例實例
+// 建立服務實例
 export const googleDriveService = new GoogleDriveService();
