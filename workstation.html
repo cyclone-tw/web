@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的工作站</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+        }
+
+        /* 標籤頁導航 */
+        .tab-navigation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .tab-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .tab-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 內容區域 */
+        .content-area {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 書籤區域樣式 */
+        .bookmarks-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .bookmark-category {
+            margin-bottom: 30px;
+        }
+
+        .category-title {
+            color: #555;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bookmark-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .bookmark-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e1e5e9;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+        }
+
+        .bookmark-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .bookmark-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .bookmark-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        .bookmark-description {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .bookmark-url {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 8px;
+            word-break: break-all;
+        }
+
+        /* 書籤動作按鈕樣式 */
+        .bookmark-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .bookmark-card:hover .bookmark-actions {
+            opacity: 1;
+        }
+
+        .edit-btn, .delete-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .edit-btn:hover {
+            background: #fef3c7;
+            transform: scale(1.1);
+        }
+
+        .delete-btn:hover {
+            background: #fee2e2;
+            transform: scale(1.1);
+        }
+
+        /* 新增書籤按鈕 */
+        .add-bookmark-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .add-bookmark-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        /* 佔位符樣式 */
+        .placeholder {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .bookmark-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .bookmark-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .tab-navigation {
+                flex-wrap: wrap;
+            }
+
+            .bookmark-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏢 我的工作站</h1>
+            <p class="subtitle">整合您的日常工作工具，提升工作效率</p>
+        </header>
+
+        <!-- 標籤頁導航 -->
+        <nav class="tab-navigation">
+            <button class="tab-button active" onclick="switchTab('bookmarks')">
+                📚 常用網站
+            </button>
+            <button class="tab-button" onclick="switchTab('tools')">
+                🛠️ 工具箱
+            </button>
+            <button class="tab-button" onclick="switchTab('notes')">
+                📝 筆記本
+            </button>
+            <button class="tab-button" onclick="switchTab('calendar')">
+                📅 日程表
+            </button>
+        </nav>
+
+        <!-- 內容區域 -->
+        <main class="content-area">
+            <!-- 常用網站標籤頁 -->
+            <div id="bookmarks" class="tab-content active">
+                <div class="bookmarks-section">
+                    <h2>📚 常用網站書籤</h2>
+                    
+                    <!-- KSPS-公務 分類 -->
+                    <div class="bookmark-category">
+                        <h3 class="category-title">
+                            🏛️ KSPS-公務
+                        </h3>
+                        <div class="bookmark-grid">
+                            <a href="https://gdms.nantou.gov.tw/GDMS_LOGIN.aspx" class="bookmark-card" target="_blank" data-category="ksps-official">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=gdms.nantou.gov.tw" alt="公文系統" class="bookmark-icon">
+                                <div class="bookmark-title">公文系統</div>
+                                <div class="bookmark-description">南投縣政府公文管理系統</div>
+                                <div class="bookmark-url">gdms.nantou.gov.tw</div>
+                            </a>
+                            
+                            <a href="https://sso.ntct.edu.tw/NewLogins/" class="bookmark-card" target="_blank" data-category="ksps-official">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=sso.ntct.edu.tw" alt="單一認證入口網" class="bookmark-icon">
+                                <div class="bookmark-title">單一認證入口網</div>
+                                <div class="bookmark-description">南投縣教育處統一登入系統</div>
+                                <div class="bookmark-url">sso.ntct.edu.tw</div>
+                            </a>
+                            
+                            <a href="https://webitr.nantou.gov.tw/WebITR/" class="bookmark-card" target="_blank" data-category="ksps-official">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=webitr.nantou.gov.tw" alt="差勤系統" class="bookmark-icon">
+                                <div class="bookmark-title">差勤系統</div>
+                                <div class="bookmark-description">南投縣政府差勤管理系統</div>
+                                <div class="bookmark-url">webitr.nantou.gov.tw</div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- KSPS-特教 分類 -->
+                    <div class="bookmark-category">
+                        <h3 class="category-title">
+                            🎓 KSPS-特教
+                        </h3>
+                        <div class="bookmark-grid">
+                            <a href="https://special.moe.gov.tw/#/menuLayout/register/study" class="bookmark-card" target="_blank" data-category="ksps-special">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=special.moe.gov.tw" alt="特教研習報名" class="bookmark-icon">
+                                <div class="bookmark-title">特教研習報名</div>
+                                <div class="bookmark-description">教育部特教研習報名系統</div>
+                                <div class="bookmark-url">special.moe.gov.tw</div>
+                            </a>
+                            
+                            <a href="http://spec.ntct.edu.tw/" class="bookmark-card" target="_blank" data-category="ksps-special">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=spec.ntct.edu.tw" alt="特教資源中心" class="bookmark-icon">
+                                <div class="bookmark-title">特教資源中心</div>
+                                <div class="bookmark-description">南投縣特殊教育資源中心</div>
+                                <div class="bookmark-url">spec.ntct.edu.tw</div>
+                            </a>
+                            
+                            <a href="https://www.set.edu.tw/" class="bookmark-card" target="_blank" data-category="ksps-special">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=www.set.edu.tw" alt="特教通報網" class="bookmark-icon">
+                                <div class="bookmark-title">特教通報網</div>
+                                <div class="bookmark-description">全國特殊教育通報網</div>
+                                <div class="bookmark-url">set.edu.tw</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 工作效率類 -->
+                    <div class="bookmark-category">
+                        <h3 class="category-title">
+                            💼 工作效率
+                        </h3>
+                        <div class="bookmark-grid">
+                            <a href="https://www.notion.so" class="bookmark-card" target="_blank" data-category="work-efficiency">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.notion.so/images/favicon.ico" alt="Notion" class="bookmark-icon">
+                                <div class="bookmark-title">Notion</div>
+                                <div class="bookmark-description">筆記與專案管理工具</div>
+                                <div class="bookmark-url">notion.so</div>
+                            </a>
+
+                            <a href="https://gmail.com" class="bookmark-card" target="_blank" data-category="work-efficiency">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" alt="Gmail" class="bookmark-icon">
+                                <div class="bookmark-title">Gmail</div>
+                                <div class="bookmark-description">電子郵件管理</div>
+                                <div class="bookmark-url">gmail.com</div>
+                            </a>
+                            
+                            <a href="https://calendar.google.com" class="bookmark-card" target="_blank" data-category="work-efficiency">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://calendar.google.com/googlecalendar/images/favicons_2020q4/calendar_31.ico" alt="Google Calendar" class="bookmark-icon">
+                                <div class="bookmark-title">Google Calendar</div>
+                                <div class="bookmark-description">行程管理與會議安排</div>
+                                <div class="bookmark-url">calendar.google.com</div>
+                            </a>
+                            
+                            <a href="https://drive.google.com" class="bookmark-card" target="_blank" data-category="work-efficiency">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" alt="Google Drive" class="bookmark-icon">
+                                <div class="bookmark-title">Google Drive</div>
+                                <div class="bookmark-description">雲端檔案儲存與協作</div>
+                                <div class="bookmark-url">drive.google.com</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- AI 工具分類 -->
+                    <div class="bookmark-category">
+                        <h3 class="category-title">
+                            🤖 AI 工具
+                        </h3>
+                        <div class="bookmark-grid">
+                            <a href="https://chat.openai.com" class="bookmark-card" target="_blank" data-category="ai-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=chat.openai.com" alt="ChatGPT" class="bookmark-icon">
+                                <div class="bookmark-title">ChatGPT</div>
+                                <div class="bookmark-description">OpenAI 的對話式 AI 助手</div>
+                                <div class="bookmark-url">chat.openai.com</div>
+                            </a>
+                            
+                            <a href="https://claude.ai" class="bookmark-card" target="_blank" data-category="ai-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=claude.ai" alt="Claude.ai" class="bookmark-icon">
+                                <div class="bookmark-title">Claude.ai</div>
+                                <div class="bookmark-description">Anthropic 的 AI 助手</div>
+                                <div class="bookmark-url">claude.ai</div>
+                            </a>
+                            
+                            <a href="https://cursor.com" class="bookmark-card" target="_blank" data-category="ai-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=cursor.com" alt="Cursor" class="bookmark-icon">
+                                <div class="bookmark-title">Cursor</div>
+                                <div class="bookmark-description">AI 驅動的程式碼編輯器</div>
+                                <div class="bookmark-url">cursor.com</div>
+                            </a>
+                            
+                            <a href="https://gemini.google.com" class="bookmark-card" target="_blank" data-category="ai-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.google.com/s2/favicons?domain=gemini.google.com" alt="Gemini" class="bookmark-icon">
+                                <div class="bookmark-title">Gemini</div>
+                                <div class="bookmark-description">Google 的多模態 AI 助手</div>
+                                <div class="bookmark-url">gemini.google.com</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 開發工具類 -->
+                    <div class="bookmark-category">
+                        <h3 class="category-title">
+                            👨‍💻 開發工具
+                        </h3>
+                        <div class="bookmark-grid">
+                            <a href="https://github.com" class="bookmark-card" target="_blank" data-category="dev-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://github.githubassets.com/favicons/favicon.png" alt="GitHub" class="bookmark-icon">
+                                <div class="bookmark-title">GitHub</div>
+                                <div class="bookmark-description">程式碼版本控制與協作</div>
+                                <div class="bookmark-url">github.com</div>
+                            </a>
+                            
+                            <a href="https://stackoverflow.com" class="bookmark-card" target="_blank" data-category="dev-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico" alt="Stack Overflow" class="bookmark-icon">
+                                <div class="bookmark-title">Stack Overflow</div>
+                                <div class="bookmark-description">程式設計問答社群</div>
+                                <div class="bookmark-url">stackoverflow.com</div>
+                            </a>
+                            
+                            <a href="https://codepen.io" class="bookmark-card" target="_blank" data-category="dev-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://cpwebassets.codepen.io/assets/favicon/favicon-touch-de50acbf5d634ec6791894eba4ba9cf490f709b3d742597c6fc4b734e6492a5a.png" alt="CodePen" class="bookmark-icon">
+                                <div class="bookmark-title">CodePen</div>
+                                <div class="bookmark-description">線上程式碼編輯器</div>
+                                <div class="bookmark-url">codepen.io</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 設計工具類 -->
+                    <div class="bookmark-category">
+                        <h3 class="category-title">
+                            🎨 設計工具
+                        </h3>
+                        <div class="bookmark-grid">
+                            <a href="https://www.figma.com" class="bookmark-card" target="_blank" data-category="design-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://static.figma.com/app/icon/1/favicon.png" alt="Figma" class="bookmark-icon">
+                                <div class="bookmark-title">Figma</div>
+                                <div class="bookmark-description">協作式介面設計工具</div>
+                                <div class="bookmark-url">figma.com</div>
+                            </a>
+                            
+                            <a href="https://www.canva.com" class="bookmark-card" target="_blank" data-category="design-tools">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://static.canva.com/web/images/favicon.ico" alt="Canva" class="bookmark-icon">
+                                <div class="bookmark-title">Canva</div>
+                                <div class="bookmark-description">線上圖形設計平台</div>
+                                <div class="bookmark-url">canva.com</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 我的常用網站類 -->
+                    <div class="bookmark-category">
+                        <h3 class="category-title">
+                            ⭐ 我的常用網站
+                        </h3>
+                        <div class="bookmark-grid">
+                            <a href="https://www.youtube.com" class="bookmark-card" target="_blank" data-category="my-sites">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://www.youtube.com/favicon.ico" alt="YouTube" class="bookmark-icon">
+                                <div class="bookmark-title">YouTube</div>
+                                <div class="bookmark-description">影片分享平台</div>
+                                <div class="bookmark-url">youtube.com</div>
+                            </a>
+                            
+                            <a href="https://www.facebook.com" class="bookmark-card" target="_blank" data-category="my-sites">
+                                <div class="bookmark-actions">
+                                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                                </div>
+                                <img src="https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico" alt="Facebook" class="bookmark-icon">
+                                <div class="bookmark-title">Facebook</div>
+                                <div class="bookmark-description">社群網路平台</div>
+                                <div class="bookmark-url">facebook.com</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="add-bookmark-btn" onclick="addBookmark()">
+                            ➕ 新增書籤
+                        </button>
+                        
+                        <button class="add-bookmark-btn" onclick="exportToJSON()" style="background: #17a2b8;">
+                            💾 匯出 JSON
+                        </button>
+                        
+                        <button class="add-bookmark-btn" onclick="importFromFile()" style="background: #28a745;">
+                            📁 匯入 JSON
+                        </button>
+                        
+                        <button class="add-bookmark-btn" onclick="resetBookmarks()" style="background: #dc3545;">
+                            🔄 重置為預設
+                        </button>
+                    </div>
+                    
+                    <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileImport(this)">
+                </div>
+            </div>
+
+            <!-- 工具箱標籤頁 -->
+            <div id="tools" class="tab-content">
+                <div class="placeholder">
+                    <div class="placeholder-icon">🛠️</div>
+                    <h2>工具箱</h2>
+                    <p>這個區域可以放置各種實用工具，如計算器、單位轉換器等。</p>
+                </div>
+            </div>
+
+            <!-- 筆記本標籤頁 -->
+            <div id="notes" class="tab-content">
+                <div class="placeholder">
+                    <div class="placeholder-icon">📝</div>
+                    <h2>筆記本</h2>
+                    <p>這裡可以建立快速筆記功能，記錄重要資訊。</p>
+                </div>
+            </div>
+
+            <!-- 日程表標籤頁 -->
+            <div id="calendar" class="tab-content">
+                <div class="placeholder">
+                    <div class="placeholder-icon">📅</div>
+                    <h2>日程表</h2>
+                    <p>可以整合日曆功能，顯示今日待辦事項。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 標籤頁切換功能
+        function switchTab(tabName) {
+            // 隱藏所有標籤頁內容
+            const allTabs = document.querySelectorAll('.tab-content');
+            allTabs.forEach(tab => tab.classList.remove('active'));
+
+            // 移除所有按鈕的active狀態
+            const allButtons = document.querySelectorAll('.tab-button');
+            allButtons.forEach(button => button.classList.remove('active'));
+
+            // 顯示選中的標籤頁
+            document.getElementById(tabName).classList.add('active');
+            
+            // 為對應按鈕添加active狀態
+            event.target.classList.add('active');
+        }
+
+        // 新增書籤功能
+        function addBookmark() {
+            // 取得可用的分類（按照頁面顯示順序）
+            const categories = [
+                { id: 'ksps-official', name: '🏛️ KSPS-公務' },
+                { id: 'ksps-special', name: '🎓 KSPS-特教' },
+                { id: 'work-efficiency', name: '💼 工作效率' },
+                { id: 'ai-tools', name: '🤖 AI 工具' },
+                { id: 'dev-tools', name: '👨‍💻 開發工具' },
+                { id: 'design-tools', name: '🎨 設計工具' },
+                { id: 'my-sites', name: '⭐ 我的常用網站' }
+            ];
+
+            // 顯示分類選擇對話框
+            let categoryOptions = '請選擇要新增到哪個分類：\n\n';
+            categories.forEach((cat, index) => {
+                categoryOptions += `${index + 1}. ${cat.name}\n`;
+            });
+            
+            const categoryChoice = prompt(categoryOptions + '\n請輸入分類編號 (1-' + categories.length + ')：');
+            if (!categoryChoice || categoryChoice < 1 || categoryChoice > categories.length) {
+                alert('無效的分類選擇！');
+                return;
+            }
+            
+            const selectedCategory = categories[categoryChoice - 1];
+
+            // 取得書籤資訊
+            const title = prompt('請輸入網站名稱：');
+            if (!title) return;
+
+            const url = prompt('請輸入網站網址（請包含 http:// 或 https://）：');
+            if (!url) return;
+
+            const description = prompt('請輸入網站描述（可選）：') || '';
+
+            // 建立新的書籤元素
+            const newBookmark = createBookmarkElement(title, url, description, selectedCategory.id);
+            
+            // 找到對應的容器並新增書籤
+            const categoryContainers = document.querySelectorAll('.bookmark-category');
+            const categoryIndex = categories.findIndex(cat => cat.id === selectedCategory.id);
+            
+            if (categoryIndex !== -1 && categoryContainers[categoryIndex]) {
+                const targetContainer = categoryContainers[categoryIndex].querySelector('.bookmark-grid');
+                targetContainer.appendChild(newBookmark);
+                
+                // 儲存到 localStorage
+                saveAllBookmarksToStorage();
+                
+                alert(`書籤已成功新增到「${selectedCategory.name}」分類！`);
+            } else {
+                alert('新增書籤時發生錯誤，請重試。');
+            }
+        }
+
+        // 建立書籤元素
+        function createBookmarkElement(title, url, description, categoryId = 'my-sites') {
+            const bookmarkCard = document.createElement('a');
+            bookmarkCard.href = url;
+            bookmarkCard.className = 'bookmark-card';
+            bookmarkCard.target = '_blank';
+            bookmarkCard.setAttribute('data-category', categoryId);
+
+            // 取得網站圖示
+            const domain = new URL(url).hostname;
+            const iconUrl = `https://www.google.com/s2/favicons?domain=${domain}`;
+
+            bookmarkCard.innerHTML = `
+                <div class="bookmark-actions">
+                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                </div>
+                <img src="${iconUrl}" alt="${title}" class="bookmark-icon">
+                <div class="bookmark-title">${title}</div>
+                <div class="bookmark-description">${description}</div>
+                <div class="bookmark-url">${domain}</div>
+            `;
+
+            return bookmarkCard;
+        }
+
+        // 編輯書籤功能
+        function editBookmark(button) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const bookmarkCard = button.closest('.bookmark-card');
+            const title = bookmarkCard.querySelector('.bookmark-title').textContent;
+            const description = bookmarkCard.querySelector('.bookmark-description').textContent;
+            const currentUrl = bookmarkCard.href;
+            
+            const newTitle = prompt('請輸入新的網站名稱：', title);
+            if (newTitle === null) return;
+            
+            const newUrl = prompt('請輸入新的網站網址：', currentUrl);
+            if (newUrl === null) return;
+            
+            const newDescription = prompt('請輸入新的網站描述：', description);
+            if (newDescription === null) return;
+            
+            // 更新書籤內容
+            const domain = new URL(newUrl).hostname;
+            const iconUrl = `https://www.google.com/s2/favicons?domain=${domain}`;
+            
+            bookmarkCard.href = newUrl;
+            bookmarkCard.querySelector('.bookmark-icon').src = iconUrl;
+            bookmarkCard.querySelector('.bookmark-icon').alt = newTitle;
+            bookmarkCard.querySelector('.bookmark-title').textContent = newTitle;
+            bookmarkCard.querySelector('.bookmark-description').textContent = newDescription;
+            bookmarkCard.querySelector('.bookmark-url').textContent = domain;
+            
+            // 儲存變更
+            saveAllBookmarksToStorage();
+            alert('書籤已成功更新！');
+        }
+
+        // 刪除書籤功能
+        function deleteBookmark(button) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const bookmarkCard = button.closest('.bookmark-card');
+            const title = bookmarkCard.querySelector('.bookmark-title').textContent;
+            
+            if (confirm(`確定要刪除「${title}」這個書籤嗎？`)) {
+                bookmarkCard.remove();
+                // 儲存變更
+                saveAllBookmarksToStorage();
+                alert('書籤已刪除！');
+            }
+        }
+
+        // 儲存所有書籤到 localStorage
+        function saveAllBookmarksToStorage() {
+            const allBookmarks = {};
+            const categoryContainers = document.querySelectorAll('.bookmark-category');
+            
+            categoryContainers.forEach((container, index) => {
+                const categoryTitle = container.querySelector('.category-title').textContent.trim();
+                const bookmarkCards = container.querySelectorAll('.bookmark-card');
+                
+                // 確定分類ID
+                let categoryId = '';
+                if (categoryTitle.includes('KSPS-公務')) categoryId = 'ksps-official';
+                else if (categoryTitle.includes('KSPS-特教')) categoryId = 'ksps-special';
+                else if (categoryTitle.includes('工作效率')) categoryId = 'work-efficiency';
+                else if (categoryTitle.includes('AI 工具')) categoryId = 'ai-tools';
+                else if (categoryTitle.includes('開發工具')) categoryId = 'dev-tools';
+                else if (categoryTitle.includes('設計工具')) categoryId = 'design-tools';
+                else if (categoryTitle.includes('我的常用網站')) categoryId = 'my-sites';
+                
+                allBookmarks[categoryId] = [];
+                
+                bookmarkCards.forEach(card => {
+                    const bookmark = {
+                        title: card.querySelector('.bookmark-title').textContent,
+                        url: card.href,
+                        description: card.querySelector('.bookmark-description').textContent,
+                        icon: card.querySelector('.bookmark-icon').src
+                    };
+                    allBookmarks[categoryId].push(bookmark);
+                });
+            });
+            
+            localStorage.setItem('workstationBookmarks', JSON.stringify(allBookmarks));
+        }
+
+        // 從 localStorage 載入書籤
+        function loadBookmarksFromStorage() {
+            const savedBookmarks = JSON.parse(localStorage.getItem('workstationBookmarks') || '{}');
+            
+            if (Object.keys(savedBookmarks).length === 0) {
+                // 如果沒有儲存的書籤，保存當前的預設書籤
+                saveAllBookmarksToStorage();
+                return;
+            }
+            
+            // 清空現有書籤並載入儲存的書籤
+            const categoryMapping = {
+                'ksps-official': 0,
+                'ksps-special': 1,
+                'work-efficiency': 2,
+                'ai-tools': 3,
+                'dev-tools': 4,
+                'design-tools': 5,
+                'my-sites': 6
+            };
+            
+            Object.keys(savedBookmarks).forEach(categoryId => {
+                const categoryIndex = categoryMapping[categoryId];
+                if (categoryIndex !== undefined) {
+                    const categoryContainer = document.querySelectorAll('.bookmark-category')[categoryIndex];
+                    if (categoryContainer) {
+                        const bookmarkGrid = categoryContainer.querySelector('.bookmark-grid');
+                        
+                        // 清空現有書籤
+                        bookmarkGrid.innerHTML = '';
+                        
+                        // 載入儲存的書籤
+                        savedBookmarks[categoryId].forEach(bookmark => {
+                            const bookmarkElement = createBookmarkElementFromData(bookmark, categoryId);
+                            bookmarkGrid.appendChild(bookmarkElement);
+                        });
+                    }
+                }
+            });
+        }
+
+        // 從資料建立書籤元素
+        function createBookmarkElementFromData(bookmark, categoryId) {
+            const bookmarkCard = document.createElement('a');
+            bookmarkCard.href = bookmark.url;
+            bookmarkCard.className = 'bookmark-card';
+            bookmarkCard.target = '_blank';
+            bookmarkCard.setAttribute('data-category', categoryId);
+
+            bookmarkCard.innerHTML = `
+                <div class="bookmark-actions">
+                    <button class="edit-btn" onclick="editBookmark(this)" title="編輯">✏️</button>
+                    <button class="delete-btn" onclick="deleteBookmark(this)" title="刪除">🗑️</button>
+                </div>
+                <img src="${bookmark.icon}" alt="${bookmark.title}" class="bookmark-icon">
+                <div class="bookmark-title">${bookmark.title}</div>
+                <div class="bookmark-description">${bookmark.description}</div>
+                <div class="bookmark-url">${new URL(bookmark.url).hostname}</div>
+            `;
+
+            return bookmarkCard;
+        }
+
+        // 匯出書籤為 JSON
+        function exportToJSON() {
+            const allBookmarks = {};
+            const categoryContainers = document.querySelectorAll('.bookmark-category');
+            
+            categoryContainers.forEach((container, index) => {
+                const categoryTitle = container.querySelector('.category-title').textContent.trim();
+                const bookmarkCards = container.querySelectorAll('.bookmark-card');
+                
+                // 確定分類ID
+                let categoryId = '';
+                if (categoryTitle.includes('KSPS-公務')) categoryId = 'ksps-official';
+                else if (categoryTitle.includes('KSPS-特教')) categoryId = 'ksps-special';
+                else if (categoryTitle.includes('工作效率')) categoryId = 'work-efficiency';
+                else if (categoryTitle.includes('AI 工具')) categoryId = 'ai-tools';
+                else if (categoryTitle.includes('開發工具')) categoryId = 'dev-tools';
+                else if (categoryTitle.includes('設計工具')) categoryId = 'design-tools';
+                else if (categoryTitle.includes('我的常用網站')) categoryId = 'my-sites';
+                
+                allBookmarks[categoryId] = [];
+                
+                bookmarkCards.forEach(card => {
+                    const bookmark = {
+                        title: card.querySelector('.bookmark-title').textContent,
+                        url: card.href,
+                        description: card.querySelector('.bookmark-description').textContent,
+                        icon: card.querySelector('.bookmark-icon').src
+                    };
+                    allBookmarks[categoryId].push(bookmark);
+                });
+            });
+            
+            // 下載 JSON 檔案
+            const dataStr = JSON.stringify(allBookmarks, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'workstation_bookmarks.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('書籤已匯出為 JSON 檔案！');
+        }
+
+        // 匯入 JSON 檔案
+        function importFromFile() {
+            document.getElementById('jsonFileInput').click();
+        }
+
+        // 處理檔案匯入
+        function handleFileImport(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const bookmarks = JSON.parse(e.target.result);
+                    loadBookmarksFromData(bookmarks);
+                    saveAllBookmarksToStorage(); // 同步到 localStorage
+                    alert('已成功匯入書籤！');
+                } catch (error) {
+                    alert('JSON 檔案格式錯誤，請檢查檔案內容！');
+                }
+            };
+            reader.readAsText(file);
+            
+            // 清空 input 以便重複選擇同一檔案
+            input.value = '';
+        }
+
+        // 從資料載入書籤
+        function loadBookmarksFromData(bookmarksData) {
+            const categoryMapping = {
+                'ksps-official': 0,
+                'ksps-special': 1,
+                'work-efficiency': 2,
+                'ai-tools': 3,
+                'dev-tools': 4,
+                'design-tools': 5,
+                'my-sites': 6
+            };
+            
+            Object.keys(bookmarksData).forEach(categoryId => {
+                const categoryIndex = categoryMapping[categoryId];
+                if (categoryIndex !== undefined) {
+                    const categoryContainer = document.querySelectorAll('.bookmark-category')[categoryIndex];
+                    if (categoryContainer) {
+                        const bookmarkGrid = categoryContainer.querySelector('.bookmark-grid');
+                        
+                        // 清空現有書籤
+                        bookmarkGrid.innerHTML = '';
+                        
+                        // 載入新書籤
+                        bookmarksData[categoryId].forEach(bookmark => {
+                            const bookmarkElement = createBookmarkElementFromData(bookmark, categoryId);
+                            bookmarkGrid.appendChild(bookmarkElement);
+                        });
+                    }
+                }
+            });
+        }
+
+        // 重置為預設書籤
+        function resetBookmarks() {
+            if (confirm('確定要重置為預設書籤嗎？這會清除所有自訂的書籤！')) {
+                localStorage.removeItem('workstationBookmarks');
+                location.reload();
+            }
+        }
+
+        // 頁面載入時的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('工作站已載入完成！');
+            // 載入儲存的書籤
+            loadBookmarksFromStorage();
+        });
+    </script>
+</body>
+</html>

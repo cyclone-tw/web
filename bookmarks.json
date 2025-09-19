@@ -1,0 +1,142 @@
+{
+  "ksps-official": [
+    {
+      "title": "公文系統",
+      "url": "https://gdms.nantou.gov.tw/GDMS_LOGIN.aspx",
+      "description": "南投縣政府公文管理系統",
+      "icon": "https://www.google.com/s2/favicons?domain=gdms.nantou.gov.tw"
+    },
+    {
+      "title": "單一認證入口網",
+      "url": "https://sso.ntct.edu.tw/NewLogins/",
+      "description": "南投縣教育處統一登入系統",
+      "icon": "https://www.google.com/s2/favicons?domain=sso.ntct.edu.tw"
+    },
+    {
+      "title": "差勤系統",
+      "url": "https://webitr.nantou.gov.tw/WebITR/",
+      "description": "南投縣政府差勤管理系統",
+      "icon": "https://www.google.com/s2/favicons?domain=webitr.nantou.gov.tw"
+    }
+  ],
+  "ksps-special": [
+    {
+      "title": "特教研習報名",
+      "url": "https://special.moe.gov.tw/#/menuLayout/register/study",
+      "description": "教育部特教研習報名系統",
+      "icon": "https://www.google.com/s2/favicons?domain=special.moe.gov.tw"
+    },
+    {
+      "title": "特教資源中心",
+      "url": "http://spec.ntct.edu.tw/",
+      "description": "南投縣特殊教育資源中心",
+      "icon": "https://www.google.com/s2/favicons?domain=spec.ntct.edu.tw"
+    },
+    {
+      "title": "特教通報網",
+      "url": "https://www.set.edu.tw/",
+      "description": "全國特殊教育通報網",
+      "icon": "https://www.google.com/s2/favicons?domain=www.set.edu.tw"
+    }
+  ],
+  "work-efficiency": [
+    {
+      "title": "Notion",
+      "url": "https://www.notion.so",
+      "description": "筆記與專案管理工具",
+      "icon": "https://www.notion.so/images/favicon.ico"
+    },
+    {
+      "title": "Gmail",
+      "url": "https://gmail.com",
+      "description": "電子郵件管理",
+      "icon": "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
+    },
+    {
+      "title": "Google Calendar",
+      "url": "https://calendar.google.com",
+      "description": "行程管理與會議安排",
+      "icon": "https://calendar.google.com/googlecalendar/images/favicons_2020q4/calendar_31.ico"
+    },
+    {
+      "title": "Google Drive",
+      "url": "https://drive.google.com",
+      "description": "雲端檔案儲存與協作",
+      "icon": "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png"
+    }
+  ],
+  "ai-tools": [
+    {
+      "title": "ChatGPT",
+      "url": "https://chat.openai.com",
+      "description": "OpenAI 的對話式 AI 助手",
+      "icon": "https://www.google.com/s2/favicons?domain=chat.openai.com"
+    },
+    {
+      "title": "Claude.ai",
+      "url": "https://claude.ai",
+      "description": "Anthropic 的 AI 助手",
+      "icon": "https://www.google.com/s2/favicons?domain=claude.ai"
+    },
+    {
+      "title": "Cursor",
+      "url": "https://cursor.com",
+      "description": "AI 驅動的程式碼編輯器",
+      "icon": "https://www.google.com/s2/favicons?domain=cursor.com"
+    },
+    {
+      "title": "Gemini",
+      "url": "https://gemini.google.com",
+      "description": "Google 的多模態 AI 助手",
+      "icon": "https://www.google.com/s2/favicons?domain=gemini.google.com"
+    }
+  ],
+  "dev-tools": [
+    {
+      "title": "GitHub",
+      "url": "https://github.com",
+      "description": "程式碼版本控制與協作",
+      "icon": "https://github.githubassets.com/favicons/favicon.png"
+    },
+    {
+      "title": "Stack Overflow",
+      "url": "https://stackoverflow.com",
+      "description": "程式設計問答社群",
+      "icon": "https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico"
+    },
+    {
+      "title": "CodePen",
+      "url": "https://codepen.io",
+      "description": "線上程式碼編輯器",
+      "icon": "https://cpwebassets.codepen.io/assets/favicon/favicon-touch-de50acbf5d634ec6791894eba4ba9cf490f709b3d742597c6fc4b734e6492a5a.png"
+    }
+  ],
+  "design-tools": [
+    {
+      "title": "Figma",
+      "url": "https://www.figma.com",
+      "description": "協作式介面設計工具",
+      "icon": "https://static.figma.com/app/icon/1/favicon.png"
+    },
+    {
+      "title": "Canva",
+      "url": "https://www.canva.com",
+      "description": "線上圖形設計平台",
+      "icon": "https://static.canva.com/web/images/favicon.ico"
+    }
+  ],
+  "my-sites": [
+    {
+      "title": "YouTube",
+      "url": "https://www.youtube.com",
+      "description": "影片分享平台",
+      "icon": "https://www.youtube.com/favicon.ico"
+    },
+    {
+      "title": "Facebook",
+      "url": "https://www.facebook.com",
+      "description": "社群網路平台",
+      "icon": "https://static.xx.fbcdn.net/rsrc.php/yo/r/iRmz9lCMBD2.ico"
+    }
+  ]
+}
