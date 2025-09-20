@@ -297,7 +297,7 @@ async function handleBrowseFolders(replyToken, client, userId) {
   try {
     const userState = userStateManager.getUserState(userId);
     const currentFolderId = userState.currentBrowseFolderId;
-    const folders = await googleDriveService.listFolders(currentFolderId);
+    const folders = await googleDriveService.listPublicFolders(currentFolderId);
 
     if (folders.length === 0) {
       const pathString = userStateManager.getCurrentPathString(userId);
