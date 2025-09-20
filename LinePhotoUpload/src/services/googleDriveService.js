@@ -128,7 +128,81 @@ class GoogleDriveService {
     }
   }
 
-  // 專門列出資料夾
+  // 檢查資料夾是否為公開
+  async isFolderPublic(folderId) {
+    try {
+      if (!this.isEnabled) {
+        return false;
+      }
+
+      const response = await this.drive.permissions.list({
+        fileId: folderId,
+        fields: 'permissions(type, role)'
+      });
+
+      // 檢查是否有公開權限
+      const isPublic = response.data.permissions.some(permission =>
+        permission.type === 'anyone' || permission.type === 'anyoneWithLink'
+      );
+
+      return isPublic;
+    } catch (error) {
+      console.error('檢查資料夾權限失敗:', error);
+      // 如果檢查權限失敗，預設為不公開
+      return false;
+    }
+  }
+
+  // 專門列出公開資料夾
+  async listPublicFolders(parentFolderId = null) {
+    try {
+      if (!this.isEnabled) {
+        throw new Error('Google Drive 服務未啟用');
+      }
+
+      let query = `mimeType='application/vnd.google-apps.folder' and trashed=false`;
+
+      // 如果有指定父資料夾ID，則列出該資料夾的子資料夾
+      if (parentFolderId) {
+        query += ` and '${parentFolderId}' in parents`;
+      } else {
+        // 沒有指定父資料夾時，列出根目錄的資料夾（排除有父資料夾的）
+        // 或者列出預設資料夾中的子資料夾
+        if (config.drive.defaultFolderId) {
+          query += ` and '${config.drive.defaultFolderId}' in parents`;
+        } else {
+          // 如果沒有設定預設資料夾，則列出真正的根目錄資料夾
+          query += ` and parents in 'root'`;
+        }
+      }
+
+      console.log('查詢資料夾:', query);
+      const response = await this.drive.files.list({
+        q: query,
+        fields: 'files(id, name)',
+        orderBy: 'name'
+      });
+
+      console.log('找到資料夾:', response.data.files.length);
+
+      // 篩選出公開的資料夾
+      const publicFolders = [];
+      for (const folder of response.data.files) {
+        const isPublic = await this.isFolderPublic(folder.id);
+        if (isPublic) {
+          publicFolders.push(folder);
+        }
+      }
+
+      console.log('公開資料夾數量:', publicFolders.length);
+      return publicFolders;
+    } catch (error) {
+      console.error('列出公開資料夾失敗:', error);
+      throw error;
+    }
+  }
+
+  // 專門列出資料夾（保留原功能作為備用）
   async listFolders(parentFolderId = null) {
     try {
       if (!this.isEnabled) {
