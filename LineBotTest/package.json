@@ -1,0 +1,27 @@
+{
+  "name": "line-bot-test",
+  "version": "1.0.0",
+  "description": "Line Bot 功能測試和部署專案",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest"
+  },
+  "keywords": ["line-bot", "google-drive", "photo-upload"],
+  "author": "cyclone-tw",
+  "license": "MIT",
+  "dependencies": {
+    "@line/bot-sdk": "^10.2.0",
+    "express": "^4.18.2",
+    "googleapis": "^126.0.1",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.2",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0"
+  }
+}
