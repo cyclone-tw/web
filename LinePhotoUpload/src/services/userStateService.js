@@ -66,7 +66,9 @@ class UserStateManager {
     if (state.namingPrefix) {
       return `${state.namingPrefix}_${countStr}.${originalExtension}`;
     } else {
-      return `photo_${countStr}.${originalExtension}`;
+      // 使用當天日期作為前綴 (YYYY-MM-DD 格式)
+      const today = new Date().toISOString().split('T')[0];
+      return `${today}_${countStr}.${originalExtension}`;
     }
   }
 
