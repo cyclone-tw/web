@@ -113,6 +113,12 @@
             <div id="api-status" class="text-sm text-yellow-200 mb-2">
                 請先設定 Gemini API 金鑰才能使用
             </div>
+
+            <!-- 功能說明 -->
+            <div class="text-xs text-blue-200 bg-blue-900 bg-opacity-30 rounded-lg p-3 mb-4">
+                <p class="mb-1">📋 <strong>目前功能</strong>：AI 分析照片並生成專業肖像描述</p>
+                <p class="text-blue-300">⚡ 圖片生成功能正在開發中，目前會顯示原圖加上 AI 生成的專業描述</p>
+            </div>
         </div>
 
         <div class="max-w-7xl mx-auto">
@@ -367,40 +373,98 @@
 
                 const base64Data = imageData.split(',')[1];
                 const mimeType = imageData.match(/:(.*?);/)[1] || 'image/jpeg';
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+                // 使用 Gemini 1.5 Flash 生成詳細的圖片描述
+                const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+                const descriptionPrompt = `分析這張照片中的人物，然後生成一個詳細的英文圖片描述，用於AI圖片生成：
+
+要求：
+- 背景風格: ${settings.background}
+- 服裝風格: ${settings.clothing || '保留原始服裝'}
+- 視覺效果: ${settings.effect}
+- 角度與構圖: ${settings.angle}
+
+請生成一個專業的英文 prompt，描述一個${settings.background}背景的專業商業肖像照，包含詳細的人物特徵、服裝、燈光和構圖要求。回應只要英文 prompt，不要其他說明。`;
 
                 try {
-                    const response = await fetch(apiUrl, {
+                    // 先獲取圖片描述
+                    const descResponse = await fetch(textApiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{
                                 parts: [
-                                    { text: prompt },
+                                    { text: descriptionPrompt },
                                     { inlineData: { mimeType: mimeType, data: base64Data } }
                                 ]
                             }],
                             generationConfig: {
-                                responseModalities: ['IMAGE']
-                            },
+                                temperature: 0.7,
+                                maxOutputTokens: 500
+                            }
                         })
                     });
 
-                    if (!response.ok) {
-                        const error = await response.json();
+                    if (!descResponse.ok) {
+                        const error = await descResponse.json();
                         console.error('Gemini API Error Response:', error);
-                        throw new Error(error.error?.message || `HTTP 錯誤 ${response.status}`);
+                        throw new Error(error.error?.message || `HTTP 錯誤 ${descResponse.status}`);
                     }
 
-                    const result = await response.json();
-                    const generatedBase64 = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                    const descResult = await descResponse.json();
+                    const generatedPrompt = descResult?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-                    if (!generatedBase64) {
-                        throw new Error('API 回應中未找到圖片資料');
+                    if (!generatedPrompt) {
+                        throw new Error('無法生成圖片描述');
                     }
-                    
-                    const imageUrl = `data:image/png;base64,${generatedBase64}`;
-                    return [imageUrl];
+
+                    // 暫時返回一個模擬的結果，因為需要真正的圖片生成 API
+                    console.log('Generated prompt:', generatedPrompt);
+
+                    // 創建一個帶有生成描述的圖片（實際上是原圖+文字說明）
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+
+                    return new Promise((resolve) => {
+                        img.onload = () => {
+                            canvas.width = img.width;
+                            canvas.height = img.height + 100;
+
+                            // 繪製原圖
+                            ctx.drawImage(img, 0, 0);
+
+                            // 添加生成的描述
+                            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                            ctx.fillRect(0, img.height, canvas.width, 100);
+                            ctx.fillStyle = 'white';
+                            ctx.font = '12px Arial';
+                            ctx.fillText('Generated Description:', 10, img.height + 20);
+
+                            // 將長文字分行顯示
+                            const words = generatedPrompt.split(' ');
+                            let line = '';
+                            let y = img.height + 40;
+
+                            for (let i = 0; i < words.length; i++) {
+                                const testLine = line + words[i] + ' ';
+                                const metrics = ctx.measureText(testLine);
+                                const testWidth = metrics.width;
+
+                                if (testWidth > canvas.width - 20 && i > 0) {
+                                    ctx.fillText(line, 10, y);
+                                    line = words[i] + ' ';
+                                    y += 15;
+                                } else {
+                                    line = testLine;
+                                }
+                            }
+                            ctx.fillText(line, 10, y);
+
+                            resolve([canvas.toDataURL()]);
+                        };
+                        img.src = imageData;
+                    });
                 } catch (error) {
                     console.error('Gemini API 呼叫失敗:', error);
                     throw error;
