@@ -368,7 +368,7 @@
 
                 const base64Data = imageData.split(',')[1];
                 const mimeType = imageData.match(/:(.*?);/)[1] || 'image/jpeg';
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
 
                 try {
                     const response = await fetch(apiUrl, {
@@ -382,7 +382,7 @@
                                 ]
                             }],
                             generationConfig: {
-                                responseModalities: ['IMAGE']
+                                responseModalities: ['TEXT', 'IMAGE']
                             },
                         })
                     });
@@ -394,14 +394,27 @@
                     }
 
                     const result = await response.json();
-                    const generatedBase64 = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                    console.log('Gemini API Response:', result);
 
-                    if (!generatedBase64) {
+                    const parts = result?.candidates?.[0]?.content?.parts;
+                    if (!parts || parts.length === 0) {
+                        throw new Error('API 回應中未找到內容');
+                    }
+
+                    const generatedImages = [];
+                    for (const part of parts) {
+                        if (part.inlineData && part.inlineData.data) {
+                            const mimeType = part.inlineData.mimeType || 'image/png';
+                            const imageUrl = `data:${mimeType};base64,${part.inlineData.data}`;
+                            generatedImages.push(imageUrl);
+                        }
+                    }
+
+                    if (generatedImages.length === 0) {
                         throw new Error('API 回應中未找到圖片資料');
                     }
 
-                    const imageUrl = `data:image/png;base64,${generatedBase64}`;
-                    return [imageUrl];
+                    return generatedImages;
                 } catch (error) {
                     console.error('Gemini API 呼叫失敗:', error);
                     throw error;
