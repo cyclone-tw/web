@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📸 專業人像修圖 - 大香蕉AI工作室</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            min-height: 100vh;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans CJK TC', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .option-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .option-card.selected {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+        }
+        .preview-container {
+            max-height: 400px;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        .preview-image {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .processing {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(34, 197, 94, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.error {
+            background: rgba(239, 68, 68, 0.9);
+        }
+        .upload-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .upload-zone.dragover {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .result-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- 通知彈窗 -->
+    <div id="notification" class="notification"></div>
+
+    <div class="min-h-screen p-4">
+        <!-- 標題 -->
+        <div class="text-center mb-8 max-w-2xl mx-auto">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                📸 專業人像修圖
+            </h1>
+            <p class="text-white opacity-80 mb-4">
+                AI驅動的專業人像處理系統 (Gemini 圖生圖版)
+            </p>
+
+            <!-- API 設定按鈕 - 移到更明顯的位置 -->
+            <div class="flex justify-center mb-4">
+                <button id="settings-btn" class="flex items-center space-x-2 px-4 py-2 bg-yellow-500 bg-opacity-80 rounded-lg hover:bg-opacity-100 transition-all text-white font-medium" title="設定 API 金鑰">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>設定 API 金鑰</span>
+                </button>
+            </div>
+
+            <!-- API 狀態提示 -->
+            <div id="api-status" class="text-sm text-yellow-200 mb-2">
+                請先設定 Gemini API 金鑰才能使用
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- 左側：設定區域 -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect rounded-2xl p-6 space-y-6">
+                        <!-- 處理模式 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">處理模式</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button
+                                    id="mode-single"
+                                    class="p-3 rounded-lg text-sm font-medium transition-all bg-blue-500 text-white"
+                                >
+                                    單張處理
+                                </button>
+                                <button
+                                    id="mode-batch"
+                                    class="p-3 rounded-lg text-sm font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30"
+                                >
+                                    批量處理
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 檔案上傳 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">上傳照片</h3>
+                            <div class="upload-zone rounded-lg p-6 text-center" id="upload-zone">
+                                <input
+                                    type="file"
+                                    id="file-input"
+                                    accept="image/*"
+                                    multiple
+                                    class="hidden"
+                                />
+                                <div class="text-4xl mb-3">📷</div>
+                                <p class="text-white mb-2">拖拽照片到這裡或點擊上傳</p>
+                                <button
+                                    id="upload-btn"
+                                    class="px-4 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition-all"
+                                >
+                                    選擇照片
+                                </button>
+                                <p class="text-white opacity-70 text-sm mt-2" id="upload-status">
+                                    尚未上傳照片
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 變化張數 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">變化張數</h3>
+                            <div class="flex space-x-2" id="variations-selector">
+                                <button class="variation-btn w-10 h-10 rounded-lg font-medium transition-all bg-blue-500 text-white" data-value="1">1</button>
+                                <button class="variation-btn w-10 h-10 rounded-lg font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30" data-value="2">2</button>
+                                <button class="variation-btn w-10 h-10 rounded-lg font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30" data-value="3">3</button>
+                                <button class="variation-btn w-10 h-10 rounded-lg font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30" data-value="4">4</button>
+                                <button class="variation-btn w-10 h-10 rounded-lg font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30" data-value="5">5</button>
+                            </div>
+                        </div>
+
+                        <!-- 生成按鈕 -->
+                        <button
+                            id="generate-btn"
+                            class="w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all bg-gray-500 text-gray-300 cursor-not-allowed"
+                            disabled
+                        >
+                            請先上傳照片
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 中間：設定選項 -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect rounded-2xl p-6 space-y-6">
+                        <!-- 背景風格 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">背景風格</h3>
+                            <div class="grid grid-cols-2 gap-3" id="background-options">
+                                <!-- 選項會由 JavaScript 動態生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 服裝風格 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">服裝風格</h3>
+                            <div class="space-y-2 max-h-48 overflow-y-auto" id="clothing-options">
+                                <!-- 選項會由 JavaScript 動態生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：效果和預覽 -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect rounded-2xl p-6 space-y-6">
+                        <!-- 視覺效果 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">視覺效果</h3>
+                            <div class="grid grid-cols-2 gap-2" id="effect-options">
+                                <!-- 選項會由 JavaScript 動態生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 角度構圖 -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">角度構圖</h3>
+                            <div class="space-y-2 max-h-48 overflow-y-auto" id="angle-options">
+                                <!-- 選項會由 JavaScript 動態生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 預覽區域 -->
+                        <div id="preview-section" class="hidden">
+                            <h3 class="text-lg font-semibold text-white mb-4">原圖預覽</h3>
+                            <div class="preview-container">
+                                <img id="preview-image" class="preview-image" alt="預覽" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 結果區域 -->
+            <div id="results-section" class="mt-8 hidden">
+                <div class="glass-effect rounded-2xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-white">生成結果</h3>
+                        <button
+                            id="download-all-btn"
+                            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all hidden"
+                        >
+                            📦 批量下載
+                        </button>
+                    </div>
+
+                    <div id="processing-indicator" class="text-center py-12 hidden">
+                        <div class="processing text-6xl mb-4">🎨</div>
+                        <p class="text-white text-lg">AI 正在生成您的專業人像...</p>
+                        <p class="text-white opacity-70 mt-2" id="processing-details">
+                            請稍候，這可能需要幾分鐘
+                        </p>
+                    </div>
+
+                    <div id="results-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+                        <!-- 結果會由 JavaScript 動態生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部資訊 -->
+        <div class="text-center mt-12">
+            <div class="glass-effect rounded-2xl p-4 max-w-md mx-auto">
+                <p class="text-white opacity-80 text-sm mb-2">
+                    Cyclone
+                </p>               
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 配置選項
+        const CONFIG = {
+            backgrounds: [
+                { value: '白底證件', label: '白底證件', desc: '標準純白，適合正式用途', color: 'bg-white' },
+                { value: '商務灰', label: '商務灰', desc: '淺灰中性，柔光專業', color: 'bg-gray-200' },
+                { value: '科技藍漸層', label: '科技藍漸層', desc: '深→淺藍，科技光暈', color: 'bg-gradient-to-b from-blue-600 to-blue-300' },
+                { value: '品牌色', label: '品牌色', desc: '單色乾淨牌，強調識別', color: 'bg-purple-400' },
+                { value: '溫暖米色', label: '溫暖米色', desc: '溫馨親和，適合服務業', color: 'bg-yellow-100' },
+                { value: '深邃黑色', label: '深邃黑色', desc: '高端奢華，藝術感強', color: 'bg-gray-900' }
+            ],
+            clothing: [
+                { value: '', label: '保留原圖服裝', desc: '不修改原有服裝' },
+                { value: '深色西裝外套＋白襯衫', label: '正式西裝', desc: '深色西裝外套＋白襯衫（正式）' },
+                { value: '深色西裝外套＋淺藍襯衫', label: '商務休閒', desc: '深色西裝外套＋淺藍襯衫（無領帶）' },
+                { value: '黑色高領毛衣', label: '簡約科技', desc: '黑色高領毛衣（簡約科技感）' },
+                { value: '淺藍襯衫', label: '清爽專業', desc: '淺藍襯衫（清爽專業）' },
+                { value: '白襯衫', label: '學術風格', desc: '白襯衫（學術/教育/服務業）' },
+                { value: '深色 Polo 衫', label: '輕鬆專業', desc: '深色 Polo 衫（輕鬆專業）' },
+                { value: '休閒 T 恤（素色）', label: '親和輕鬆', desc: '休閒 T 恤（素色，親和輕鬆）' },
+                { value: '針織衫', label: '溫暖親和', desc: '針織衫（溫暖親和感）' },
+                { value: '襯衫＋背心', label: '學院風格', desc: '襯衫＋背心（學院風格）' }
+            ],
+            effects: [
+                { value: '無效果', label: '無效果', desc: '保持原始色彩' },
+                { value: '復古風格 (Vintage)', label: '復古風格', desc: '溫暖復古色調' },
+                { value: '黑白 (Black and White)', label: '黑白', desc: '經典黑白效果' },
+                { value: '深褐色 (Sepia)', label: '深褐色', desc: '懷舊深褐色調' },
+                { value: '柔光效果', label: '柔光效果', desc: '柔和光線處理' },
+                { value: '高對比', label: '高對比', desc: '增強對比度' },
+                { value: '暖色調', label: '暖色調', desc: '溫暖色彩增強' },
+                { value: '冷色調', label: '冷色調', desc: '冷靜色彩增強' }
+            ],
+            angles: [
+                { value: '正面視角（胸上半身）', label: '正面標準', desc: '正面視角（胸上半身）' },
+                { value: '左側 45° 半側臉', label: '左側45°', desc: '左側 45° 半側臉' },
+                { value: '右側 45° 半側臉', label: '右側45°', desc: '右側 45° 半側臉' },
+                { value: '側面（90°）', label: '側面90°', desc: '側面（90°）' },
+                { value: '高角度俯拍（胸上半身）', label: '高角度俯拍', desc: '高角度俯拍（胸上半身）' },
+                { value: '坐姿側拍（椅子）', label: '坐姿側拍', desc: '坐姿側拍（椅子）' },
+                { value: '辦公情境半身', label: '辦公情境', desc: '辦公情境半身' },
+                { value: '低角度仰拍', label: '低角度仰拍', desc: '低角度仰拍（權威感）' },
+                { value: '三分之二側臉', label: '三分之二側臉', desc: '三分之二側臉（藝術感）' }
+            ]
+        };
+
+        // 應用狀態
+        const AppState = {
+            mode: 'single',
+            uploadedImages: [],
+            settings: {
+                background: '白底證件',
+                clothing: '',
+                effect: '無效果',
+                angle: '正面視角（胸上半身）',
+                variations: 1
+            },
+            processing: false,
+            results: []
+        };
+
+        // API 管理
+        const APIManager = {
+            getKey: () => {
+                try {
+                    return localStorage.getItem('gemini_api_key') || '';
+                } catch (error) {
+                    console.error('讀取 Gemini API Key 失敗:', error);
+                    return '';
+                }
+            },
+
+            generatePortrait: async (imageData, settings) => {
+                const apiKey = APIManager.getKey();
+                if (!apiKey) {
+                    throw new Error('請點擊右上角的齒輪圖示設定您的 Gemini API 金鑰');
+                }
+
+                const prompt = `請根據這張照片，生成一張專業的商業肖像照。
+重要：請務必保持人物的臉部特徵、五官和身份與原圖完全一致，只對風格和背景進行調整。
+
+具體要求如下：
+- 背景風格: ${settings.background}
+- 服裝風格: ${settings.clothing || '保留原始服裝'}
+- 視覺效果: ${settings.effect}
+- 角度與構圖: ${settings.angle}
+- 整體風格: 專業頭像、高品質、演播室燈光、適合商業用途。人物看起來要自信且平易近人。`;
+
+                const base64Data = imageData.split(',')[1];
+                const mimeType = imageData.match(/:(.*?);/)[1] || 'image/jpeg';
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: prompt },
+                                    { inlineData: { mimeType: mimeType, data: base64Data } }
+                                ]
+                            }],
+                            generationConfig: {
+                                responseModalities: ['IMAGE']
+                            },
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        console.error('Gemini API Error Response:', error);
+                        throw new Error(error.error?.message || `HTTP 錯誤 ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const generatedBase64 = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+                    if (!generatedBase64) {
+                        throw new Error('API 回應中未找到圖片資料');
+                    }
+                    
+                    const imageUrl = `data:image/png;base64,${generatedBase64}`;
+                    return [imageUrl];
+                } catch (error) {
+                    console.error('Gemini API 呼叫失敗:', error);
+                    throw error;
+                }
+            }
+        };
+
+        // 通知系統
+        const NotificationSystem = {
+            show: (message, isError = false) => {
+                const notification = document.getElementById('notification');
+                if (notification) {
+                    notification.textContent = message;
+                    notification.className = `notification show ${isError ? 'error' : ''}`;
+                    
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 3000);
+                }
+            }
+        };
+
+        // UI 管理
+        const UIManager = {
+            initOptions: () => {
+                UIManager.renderBackgroundOptions();
+                UIManager.renderClothingOptions();
+                UIManager.renderEffectOptions();
+                UIManager.renderAngleOptions();
+            },
+
+            renderBackgroundOptions: () => {
+                const container = document.getElementById('background-options');
+                if (!container) return;
+
+                container.innerHTML = CONFIG.backgrounds.map(option => `
+                    <div class="option-card p-3 rounded-lg cursor-pointer bg-white bg-opacity-10" data-type="background" data-value="${option.value}">
+                        <div class="${option.color} w-full h-8 rounded mb-2"></div>
+                        <p class="text-white text-sm font-medium">${option.label}</p>
+                        <p class="text-white opacity-70 text-xs">${option.desc}</p>
+                    </div>
+                `).join('');
+                container.querySelector('[data-value="白底證件"]')?.classList.add('selected');
+            },
+
+            renderClothingOptions: () => {
+                const container = document.getElementById('clothing-options');
+                if (!container) return;
+
+                container.innerHTML = CONFIG.clothing.map(option => `
+                    <div class="option-card p-3 rounded-lg cursor-pointer bg-white bg-opacity-10" data-type="clothing" data-value="${option.value}">
+                        <p class="text-white text-sm font-medium">${option.label}</p>
+                        <p class="text-white opacity-70 text-xs">${option.desc}</p>
+                    </div>
+                `).join('');
+                container.querySelector('[data-value=""]')?.classList.add('selected');
+            },
+
+            renderEffectOptions: () => {
+                const container = document.getElementById('effect-options');
+                if (!container) return;
+                container.innerHTML = CONFIG.effects.map(option => `
+                    <div class="option-card p-2 rounded-lg cursor-pointer bg-white bg-opacity-10" data-type="effect" data-value="${option.value}">
+                        <p class="text-white text-xs font-medium">${option.label}</p>
+                    </div>
+                `).join('');
+                container.querySelector('[data-value="無效果"]')?.classList.add('selected');
+            },
+
+            renderAngleOptions: () => {
+                const container = document.getElementById('angle-options');
+                if (!container) return;
+                container.innerHTML = CONFIG.angles.map(option => `
+                    <div class="option-card p-2 rounded-lg cursor-pointer bg-white bg-opacity-10" data-type="angle" data-value="${option.value}">
+                        <p class="text-white text-xs font-medium">${option.label}</p>
+                    </div>
+                `).join('');
+                container.querySelector('[data-value="正面視角（胸上半身）"]')?.classList.add('selected');
+            },
+
+            updateUploadStatus: () => {
+                const status = document.getElementById('upload-status');
+                const generateBtn = document.getElementById('generate-btn');
+                
+                if (AppState.uploadedImages.length === 0) {
+                    if (status) status.textContent = '尚未上傳照片';
+                    if (generateBtn) {
+                        generateBtn.disabled = true;
+                        generateBtn.textContent = '請先上傳照片';
+                        generateBtn.className = 'w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all bg-gray-500 text-gray-300 cursor-not-allowed';
+                    }
+                } else {
+                    if (status) status.textContent = `已選擇 ${AppState.uploadedImages.length} 張照片`;
+                    if (generateBtn) {
+                        generateBtn.disabled = false;
+                        generateBtn.textContent = '✨ 開始生成';
+                        generateBtn.className = 'w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700';
+                    }
+                }
+            },
+
+            showPreview: (imageData) => {
+                const previewSection = document.getElementById('preview-section');
+                const previewImage = document.getElementById('preview-image');
+                
+                if (previewSection && previewImage) {
+                    previewImage.src = imageData;
+                    previewSection.classList.remove('hidden');
+                }
+            },
+
+            showProcessing: (details) => {
+                const resultsSection = document.getElementById('results-section');
+                const processingIndicator = document.getElementById('processing-indicator');
+                const resultsGrid = document.getElementById('results-grid');
+                const processingDetails = document.getElementById('processing-details');
+                
+                if (resultsSection) resultsSection.classList.remove('hidden');
+                if (processingIndicator) processingIndicator.classList.remove('hidden');
+                if (resultsGrid) resultsGrid.classList.add('hidden');
+                if (processingDetails && details) processingDetails.textContent = details;
+            },
+
+            hideProcessing: () => {
+                const processingIndicator = document.getElementById('processing-indicator');
+                if (processingIndicator) processingIndicator.classList.add('hidden');
+            },
+
+            showResults: (results) => {
+                const resultsGrid = document.getElementById('results-grid');
+                const downloadAllBtn = document.getElementById('download-all-btn');
+                if (!resultsGrid) return;
+                resultsGrid.innerHTML = results.map((result, index) => `
+                    <div class="result-card rounded-lg p-4">
+                        <img src="${result.url}" alt="生成結果 ${index + 1}" 
+                             class="w-full h-48 object-cover rounded-lg mb-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white text-sm">
+                                ${result.originalName || `結果 ${index + 1}`} v${result.variation || 1}
+                            </span>
+                            <button onclick="downloadImage('${result.url}', 'portrait_${index + 1}.png')"
+                                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm transition-colors">
+                                下載
+                            </button>
+                        </div>
+                    </div>`).join('');
+                resultsGrid.classList.remove('hidden');
+                if (downloadAllBtn && results.length > 0) {
+                    downloadAllBtn.classList.remove('hidden');
+                }
+            }
+        };
+
+        // 檔案處理
+        const FileHandler = {
+            handleFiles: (files) => {
+                const fileArray = Array.from(files);
+                const imagePromises = fileArray.map(file => {
+                    return new Promise((resolve, reject) => {
+                        if (!file.type.startsWith('image/')) {
+                            reject(new Error(`${file.name} 不是有效的圖片檔案`));
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve({ file: file, dataUrl: e.target.result, name: file.name });
+                        reader.onerror = () => reject(new Error(`讀取 ${file.name} 失敗`));
+                        reader.readAsDataURL(file);
+                    });
+                });
+                Promise.allSettled(imagePromises).then(results => {
+                    const successful = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+                    const failed = results.filter(r => r.status === 'rejected');
+                    if (failed.length > 0) NotificationSystem.show(`${failed.length} 個檔案載入失敗`, true);
+                    if (successful.length > 0) {
+                        if (AppState.mode === 'single') AppState.uploadedImages = [successful[0]];
+                        else AppState.uploadedImages = successful;
+                        UIManager.updateUploadStatus();
+                        UIManager.showPreview(successful[0].dataUrl);
+                        NotificationSystem.show(`已載入 ${successful.length} 張照片`);
+                    }
+                });
+            },
+            setupDragAndDrop: () => {
+                const uploadZone = document.getElementById('upload-zone');
+                if (!uploadZone) return;
+                ['dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadZone.addEventListener(eventName, e => e.preventDefault());
+                });
+                uploadZone.addEventListener('dragover', () => uploadZone.classList.add('dragover'));
+                uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+                uploadZone.addEventListener('drop', e => {
+                    uploadZone.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) FileHandler.handleFiles(files);
+                });
+            }
+        };
+
+        // 主要功能
+        const PortraitGenerator = {
+            generate: async () => {
+                if (AppState.uploadedImages.length === 0) {
+                    NotificationSystem.show('請先上傳照片', true); return;
+                }
+                if (!APIManager.getKey()) {
+                    NotificationSystem.show('請點擊右上角的齒輪圖示設定您的 Gemini API 金鑰', true); return;
+                }
+
+                AppState.processing = true;
+                AppState.results = [];
+                try {
+                    const details = `風格：${AppState.settings.background} | 服裝：${AppState.settings.clothing || '原圖'} | 效果：${AppState.settings.effect}`;
+                    UIManager.showProcessing(details);
+
+                    const allResults = [];
+                    for (let image of AppState.uploadedImages) {
+                        for (let i = 0; i < AppState.settings.variations; i++) {
+                            try {
+                                const urls = await APIManager.generatePortrait(image.dataUrl, AppState.settings);
+                                allResults.push(...urls.map(url => ({ url, originalName: image.name, variation: i + 1 })));
+                            } catch (error) {
+                                console.error(`生成 ${image.name} 變化 ${i + 1} 失敗:`, error);
+                                NotificationSystem.show(`${image.name} 部分生成失敗: ${error.message}`, true);
+                            }
+                        }
+                    }
+                    AppState.results = allResults;
+                    UIManager.hideProcessing();
+                    UIManager.showResults(allResults);
+                    if (allResults.length > 0) NotificationSystem.show(`成功生成 ${allResults.length} 張人像`);
+                    else NotificationSystem.show('生成失敗，請檢查 API 設定或控制台錯誤訊息', true);
+                } catch (error) {
+                    console.error('生成失敗:', error);
+                    UIManager.hideProcessing();
+                    NotificationSystem.show(`生成失敗：${error.message}`, true);
+                } finally {
+                    AppState.processing = false;
+                }
+            }
+        };
+
+        // 工具函數
+        function downloadImage(url, filename) {
+            try {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('下載失敗:', error);
+                NotificationSystem.show('下載失敗，請右鍵另存圖片', true);
+            }
+        }
+        function downloadAll() {
+            if (AppState.results.length === 0) {
+                NotificationSystem.show('沒有可下載的結果', true); return;
+            }
+            AppState.results.forEach((result, index) => {
+                setTimeout(() => {
+                    downloadImage(result.url, `portrait_${result.originalName}_v${result.variation}.png`);
+                }, index * 300);
+            });
+            NotificationSystem.show(`開始下載 ${AppState.results.length} 張圖片`);
+        }
+
+        // 事件處理
+        function setupEventListeners() {
+            document.getElementById('mode-single')?.addEventListener('click', () => {
+                AppState.mode = 'single';
+                document.getElementById('mode-single').className = 'p-3 rounded-lg text-sm font-medium transition-all bg-blue-500 text-white';
+                document.getElementById('mode-batch').className = 'p-3 rounded-lg text-sm font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30';
+                if (AppState.uploadedImages.length > 1) {
+                    AppState.uploadedImages = [AppState.uploadedImages[0]];
+                    UIManager.updateUploadStatus();
+                }
+            });
+            document.getElementById('mode-batch')?.addEventListener('click', () => {
+                AppState.mode = 'batch';
+                document.getElementById('mode-batch').className = 'p-3 rounded-lg text-sm font-medium transition-all bg-blue-500 text-white';
+                document.getElementById('mode-single').className = 'p-3 rounded-lg text-sm font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30';
+            });
+            document.getElementById('upload-btn')?.addEventListener('click', () => document.getElementById('file-input')?.click());
+            document.getElementById('file-input')?.addEventListener('change', (e) => e.target.files.length > 0 && FileHandler.handleFiles(e.target.files));
+            document.querySelectorAll('.variation-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.variation-btn').forEach(b => b.className = 'variation-btn w-10 h-10 rounded-lg font-medium transition-all bg-white bg-opacity-20 text-white hover:bg-opacity-30');
+                    btn.className = 'variation-btn w-10 h-10 rounded-lg font-medium transition-all bg-blue-500 text-white';
+                    AppState.settings.variations = parseInt(btn.dataset.value);
+                });
+            });
+            document.addEventListener('click', (e) => {
+                const card = e.target.closest('.option-card');
+                if (card) {
+                    const { type, value } = card.dataset;
+                    if (type && value !== undefined) {
+                        document.querySelectorAll(`[data-type="${type}"]`).forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        AppState.settings[type] = value;
+                    }
+                }
+            });
+            document.getElementById('settings-btn')?.addEventListener('click', () => {
+                const currentKey = APIManager.getKey();
+                const message = currentKey ?
+                    '請輸入您的 Google Gemini API 金鑰（目前已設定）:' :
+                    '請輸入您的 Google Gemini API 金鑰:\n\n如何取得:\n1. 前往 https://aistudio.google.com/app/apikey\n2. 點擊 "Create API Key"\n3. 複製產生的金鑰';
+
+                const apiKey = prompt(message, currentKey);
+                if (apiKey !== null) {
+                    try {
+                        localStorage.setItem('gemini_api_key', apiKey.trim());
+                        updateAPIStatus();
+                        if (apiKey.trim()) {
+                            NotificationSystem.show('✅ API 金鑰已更新，可以開始使用！');
+                        } else {
+                            NotificationSystem.show('API 金鑰已清除');
+                        }
+                    } catch (error) {
+                        NotificationSystem.show('儲存 API 金鑰失敗，您的瀏覽器可能不支援。', true);
+                    }
+                }
+            });
+            document.getElementById('generate-btn')?.addEventListener('click', PortraitGenerator.generate);
+            document.getElementById('download-all-btn')?.addEventListener('click', downloadAll);
+        }
+
+        // API 狀態管理
+        function updateAPIStatus() {
+            const apiStatus = document.getElementById('api-status');
+            const settingsBtn = document.getElementById('settings-btn');
+            const apiKey = APIManager.getKey();
+
+            if (apiKey) {
+                if (apiStatus) {
+                    apiStatus.textContent = '✅ API 金鑰已設定，可以開始使用';
+                    apiStatus.className = 'text-sm text-green-200 mb-2';
+                }
+                if (settingsBtn) {
+                    settingsBtn.className = 'flex items-center space-x-2 px-4 py-2 bg-green-500 bg-opacity-80 rounded-lg hover:bg-opacity-100 transition-all text-white font-medium';
+                }
+            } else {
+                if (apiStatus) {
+                    apiStatus.textContent = '⚠️ 請先設定 Gemini API 金鑰才能使用';
+                    apiStatus.className = 'text-sm text-yellow-200 mb-2';
+                }
+                if (settingsBtn) {
+                    settingsBtn.className = 'flex items-center space-x-2 px-4 py-2 bg-yellow-500 bg-opacity-80 rounded-lg hover:bg-opacity-100 transition-all text-white font-medium animate-pulse';
+                }
+            }
+        }
+
+        // 初始化
+        function init() {
+            try {
+                updateAPIStatus();
+                if (!APIManager.getKey()) {
+                    NotificationSystem.show('歡迎！請點擊黃色按鈕設定您的 Gemini API 金鑰');
+                } else {
+                    NotificationSystem.show('偵測到 API 金鑰，準備就緒！');
+                }
+                UIManager.initOptions();
+                UIManager.updateUploadStatus();
+                setupEventListeners();
+                FileHandler.setupDragAndDrop();
+                console.log('人像修圖頁面初始化完成');
+            } catch (error) {
+                console.error('初始化失敗:', error);
+                NotificationSystem.show('頁面初始化失敗', true);
+            }
+        }
+        window.addEventListener('error', (e) => {
+            console.error('全域錯誤:', e.error);
+            NotificationSystem.show('發生未預期的錯誤', true);
+        });
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
