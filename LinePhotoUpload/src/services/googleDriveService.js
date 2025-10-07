@@ -239,6 +239,35 @@ class GoogleDriveService {
       throw error;
     }
   }
+
+  // 檢查檔案是否存在（用於避免檔名衝突）
+  async checkFileExists(fileName, folderId = config.drive.defaultFolderId) {
+    try {
+      if (!this.isEnabled) {
+        return false;
+      }
+
+      // 查詢指定資料夾中是否有同名檔案
+      const query = `name='${fileName}' and trashed=false and '${folderId}' in parents`;
+
+      const response = await this.drive.files.list({
+        q: query,
+        fields: 'files(id, name)',
+        pageSize: 1
+      });
+
+      const exists = response.data.files.length > 0;
+      if (exists) {
+        console.log(`檔案「${fileName}」已存在`);
+      }
+      return exists;
+
+    } catch (error) {
+      console.error('檢查檔案是否存在失敗:', error);
+      // 如果檢查失敗，為了安全起見，假設檔案不存在
+      return false;
+    }
+  }
 }
 
 // 建立服務實例
