@@ -96,9 +96,24 @@ async function handleImageMessage(message, replyToken, client, userId) {
 
   } catch (error) {
     console.error('處理圖片錯誤:', error);
+    console.error('錯誤堆疊:', error.stack);
+
+    let errorMessage = '❌ 照片上傳失敗，請稍後再試。';
+
+    // 根據錯誤類型提供更具體的訊息
+    if (error.message.includes('UPLOAD_FOLDER_ID')) {
+      errorMessage = '❌ 上傳資料夾未設定，請聯繫管理員';
+    } else if (error.message.includes('未提供上傳資料夾')) {
+      errorMessage = '❌ 上傳資料夾 ID 無效，請聯繫管理員';
+    } else if (error.message.includes('File not found') || error.message.includes('404')) {
+      errorMessage = '❌ 找不到上傳資料夾，請檢查資料夾 ID 是否正確';
+    } else if (error.message.includes('Permission') || error.message.includes('403')) {
+      errorMessage = '❌ 無權限存取該資料夾，請檢查 Google Drive 權限';
+    }
+
     await client.pushMessage(userId, {
       type: 'text',
-      text: '❌ 照片上傳失敗，請稍後再試。'
+      text: errorMessage
     });
   }
 }

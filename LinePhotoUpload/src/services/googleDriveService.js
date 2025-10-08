@@ -65,9 +65,16 @@ class GoogleDriveService {
         throw new Error('Google Drive 服務未啟用');
       }
 
+      // 驗證資料夾 ID
+      if (!folderId) {
+        throw new Error('未提供上傳資料夾 ID');
+      }
+
+      console.log(`準備上傳檔案「${fileName}」到資料夾 ID: ${folderId}`);
+
       const fileMetadata = {
         name: fileName,
-        parents: folderId ? [folderId] : undefined
+        parents: [folderId]
       };
 
       const media = {
@@ -85,6 +92,10 @@ class GoogleDriveService {
       return response.data;
     } catch (error) {
       console.error('檔案上傳失敗:', error);
+      console.error('錯誤詳情:', error.message);
+      if (error.response) {
+        console.error('API 回應錯誤:', error.response.data);
+      }
       throw error;
     }
   }
