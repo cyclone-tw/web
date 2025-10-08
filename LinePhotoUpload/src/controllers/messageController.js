@@ -3,9 +3,6 @@ import { googleDriveService } from '../services/googleDriveService.js';
 import { photoService } from '../services/photoService.js';
 import { config } from '../../config/config.js';
 
-// 固定的上傳資料夾名稱
-const UPLOAD_FOLDER_NAME = 'Line相片上傳助手';
-
 // 處理 Line 訊息
 export async function handleMessage(event, client) {
   const { type, replyToken, source } = event;
@@ -94,7 +91,7 @@ async function handleImageMessage(message, replyToken, client, userId) {
     // 推送結果訊息
     await client.pushMessage(userId, {
       type: 'text',
-      text: `✅ ${result.fileName} 已上傳到「${UPLOAD_FOLDER_NAME}」資料夾`
+      text: `✅ ${result.fileName} 已上傳成功`
     });
 
   } catch (error) {
@@ -116,19 +113,17 @@ async function ensureUploadFolder(userId) {
   }
 
   try {
-    // 檢查資料夾是否已存在
-    let folder = await googleDriveService.checkFolderExists(UPLOAD_FOLDER_NAME, config.drive.defaultFolderId);
+    // 使用環境變數中設定的固定資料夾 ID
+    const uploadFolderId = config.drive.uploadFolderId;
 
-    // 如果不存在，創建資料夾
-    if (!folder) {
-      folder = await googleDriveService.createFolder(UPLOAD_FOLDER_NAME, config.drive.defaultFolderId);
-      console.log(`已創建資料夾「${UPLOAD_FOLDER_NAME}」:`, folder.id);
-    } else {
-      console.log(`使用既有資料夾「${UPLOAD_FOLDER_NAME}」:`, folder.id);
+    if (!uploadFolderId) {
+      throw new Error('UPLOAD_FOLDER_ID 環境變數未設定');
     }
 
-    // 設定為當前上傳資料夾
-    userStateManager.setCurrentFolder(userId, UPLOAD_FOLDER_NAME, folder.id);
+    console.log(`使用固定上傳資料夾 ID: ${uploadFolderId}`);
+
+    // 設定為當前上傳資料夾（資料夾名稱設為空字串，因為不再需要）
+    userStateManager.setCurrentFolder(userId, 'Line相片上傳助手', uploadFolderId);
 
   } catch (error) {
     console.error('確保上傳資料夾存在時發生錯誤:', error);
@@ -141,7 +136,6 @@ async function handleStatus(replyToken, client, userId) {
   const userState = userStateManager.getUserState(userId);
 
   const statusText = `📊 當前狀態：
-🗂 上傳資料夾：${UPLOAD_FOLDER_NAME}
 📁 本次已上傳：${userState.photoCount} 張照片
 📸 模式：原始高畫質
 
@@ -164,10 +158,9 @@ async function handleHelp(replyToken, client) {
 
 📸 使用方式：
 1. 直接傳送照片即可自動上傳
-2. 照片會自動上傳到「${UPLOAD_FOLDER_NAME}」資料夾
-3. 檔名格式：拍攝日期_編號.jpg（例：2025-10-07_001.jpg）
-4. 每批上傳都會從 001 開始編號
-5. 如有重複檔名會自動遞增編號
+2. 檔名格式：拍攝日期_編號.jpg（例：2025-10-07_001.jpg）
+3. 每批上傳都會從 001 開始編號
+4. 如有重複檔名會自動遞增編號
 
 🔍 命名規則：
 • 優先使用照片的 EXIF 拍攝日期
@@ -190,7 +183,6 @@ async function handleFollow(event, client, userId) {
 • 智能避免檔名衝突
 
 📸 直接傳送照片即可開始使用！
-所有照片會上傳到「${UPLOAD_FOLDER_NAME}」資料夾
 
 輸入 "說明" 查看詳細使用方式`;
 
@@ -205,7 +197,6 @@ async function showWelcomeMessage(replyToken, client, userId) {
   const welcomeText = `👋 歡迎使用 Line 照片上傳助理！
 
 📸 直接傳送照片即可自動上傳
-🗂 上傳資料夾：${UPLOAD_FOLDER_NAME}
 
 📝 其他指令：
 • 狀態 - 查看當前統計

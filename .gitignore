@@ -32,3 +32,4 @@ yarn-error.log*
 # 使用者個人化書籤檔案（可選）
 # bookmarks-personal.json
 # my-custom-bookmarks.json
+.vercel

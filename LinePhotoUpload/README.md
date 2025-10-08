@@ -134,8 +134,14 @@ bye                   # 任何時候回到主選單
    GOOGLE_CLIENT_SECRET=你的Google Client Secret
    GOOGLE_REFRESH_TOKEN=你的Refresh Token
    GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+   UPLOAD_FOLDER_ID=你的Google Drive上傳資料夾ID
    PORT=3000
    ```
+
+   **如何取得 UPLOAD_FOLDER_ID？**
+   - 在 Google Drive 中開啟目標資料夾
+   - 從網址列複製資料夾 ID（格式：`https://drive.google.com/drive/folders/【這串就是ID】`）
+   - 例如：`1AbCdEfGhIjKlMnOpQrStUvWxYz`
 
 3. **設定 Webhook URL**
    - 複製 Railway 提供的應用程式 URL
@@ -169,6 +175,7 @@ bye                   # 任何時候回到主選單
      GOOGLE_CLIENT_ID=新的Client ID
      GOOGLE_CLIENT_SECRET=新的Client Secret
      GOOGLE_REFRESH_TOKEN=新的Refresh Token
+     UPLOAD_FOLDER_ID=新的上傳資料夾ID
      ```
 
 4. **重新部署**

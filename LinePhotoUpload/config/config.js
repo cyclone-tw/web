@@ -26,5 +26,6 @@ export const config = {
   // Google Drive 設定
   drive: {
     defaultFolderId: process.env.DEFAULT_FOLDER_ID,
+    uploadFolderId: process.env.UPLOAD_FOLDER_ID, // 固定的上傳資料夾 ID
   },
 };
