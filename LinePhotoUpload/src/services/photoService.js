@@ -13,6 +13,8 @@ class PhotoService {
   constructor() {
     this.tempDir = path.join(__dirname, '../../temp');
     this.ensureTempDir();
+    // 上傳鎖定機制：用來追蹤每個資料夾的上傳狀態
+    this.uploadLocks = new Map();
   }
 
   // 確保臨時目錄存在
@@ -20,9 +22,25 @@ class PhotoService {
     await fs.ensureDir(this.tempDir);
   }
 
+  // 等待取得上傳鎖
+  async acquireUploadLock(folderId) {
+    // 如果該資料夾已有上傳進行中，等待完成
+    while (this.uploadLocks.get(folderId)) {
+      await new Promise(resolve => setTimeout(resolve, 100)); // 等待 100ms
+    }
+    // 設定鎖定
+    this.uploadLocks.set(folderId, true);
+  }
+
+  // 釋放上傳鎖
+  releaseUploadLock(folderId) {
+    this.uploadLocks.delete(folderId);
+  }
+
   // 處理並上傳照片
   async processAndUpload(messageId, lineClient, userState) {
     let tempFilePath = null;
+    const folderId = userState.currentFolderId;
 
     try {
       // 1. 下載照片（固定使用原始模式）
@@ -31,28 +49,36 @@ class PhotoService {
       // 2. 讀取照片日期
       const photoDate = await this.extractPhotoDate(tempFilePath);
 
-      // 3. 生成檔案名稱（基於照片日期，從 001 開始）
-      const originalExtension = path.extname(tempFilePath).slice(1) || 'jpg';
-      const fileName = await this.generateUniqueFileName(
-        photoDate,
-        originalExtension,
-        userState.currentFolderId
-      );
+      // 3. 取得上傳鎖（確保同一時間只處理一張照片）
+      await this.acquireUploadLock(folderId);
 
-      // 4. 上傳到 Google Drive
-      const result = await googleDriveService.uploadFile(
-        tempFilePath,
-        fileName,
-        userState.currentFolderId
-      );
+      try {
+        // 4. 生成檔案名稱（基於照片日期，從 001 開始）
+        const originalExtension = path.extname(tempFilePath).slice(1) || 'jpg';
+        const fileName = await this.generateUniqueFileName(
+          photoDate,
+          originalExtension,
+          folderId
+        );
 
-      // 5. 增加照片計數
-      userStateManager.incrementPhotoCount(userState.userId);
+        // 5. 上傳到 Google Drive
+        const result = await googleDriveService.uploadFile(
+          tempFilePath,
+          fileName,
+          folderId
+        );
 
-      return {
-        ...result,
-        fileName: fileName,
-      };
+        // 6. 增加照片計數
+        userStateManager.incrementPhotoCount(userState.userId);
+
+        return {
+          ...result,
+          fileName: fileName,
+        };
+      } finally {
+        // 釋放鎖定，讓下一張照片可以處理
+        this.releaseUploadLock(folderId);
+      }
     } catch (error) {
       console.error('處理照片錯誤:', error);
       throw error;
