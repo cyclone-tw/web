@@ -131,8 +131,8 @@ class PhotoService {
   // 下載照片
   async downloadPhoto(messageId, lineClient, mode = 'original') {
     try {
-      // 固定使用原始模式
-      const apiEndpoint = `https://api-data.line.me/v2/bot/message/${messageId}/content/original`;
+      // Line API 只有 /content 端點，會自動返回原始大小的圖片
+      const apiEndpoint = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
 
       // 取得 Line 的存取權杖
       const accessToken = lineClient.config.channelAccessToken;
