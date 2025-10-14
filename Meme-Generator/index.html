@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>梗圖產生器 v6 - 完美修復版</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎨</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid #16213e;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f4c75 0%, #1b262c 100%);
+            color: #00d4ff;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #a0d2eb;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+            height: calc(100vh - 200px);
+            min-height: 600px;
+        }
+
+        /* 左側控制面板 */
+        .control-panel {
+            background: #16213e;
+            padding: 20px;
+            border-right: 1px solid #0f4c75;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #0f4c75;
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-section h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0f4c75 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: #2ed573;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffa502;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #a0d2eb;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #0f4c75;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: #0f3460;
+            color: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* 右側畫布區域 - 固定在右側 */
+        .canvas-area {
+            background: #0f3460;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #0f4c75;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 工具列 */
+        .toolbar {
+            display: none;
+            gap: 10px;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #0f4c75;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .toolbar.active {
+            display: flex;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 0 10px;
+            border-right: 1px solid #0f4c75;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        .toolbar-btn {
+            background: #00d4ff;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .toolbar-btn:hover {
+            background: #a0d2eb;
+            transform: scale(1.05);
+        }
+
+        .toolbar-btn.active {
+            background: #2ed573;
+        }
+
+        .toolbar-label {
+            color: #a0d2eb;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        /* 繪圖控制器 */
+        .draw-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-picker-small {
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* 貼圖選擇器 */
+        .sticker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #0f3460;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .sticker-item {
+            font-size: 1.8em;
+            text-align: center;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .sticker-item:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: scale(1.2);
+        }
+
+        .upload-zone {
+            width: 100%;
+            flex: 1;
+            border: 3px dashed #00d4ff;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(15, 76, 117, 0.2);
+            min-height: 400px;
+        }
+
+        .upload-zone:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: #a0d2eb;
+            transform: scale(1.02);
+        }
+
+        .upload-zone.dragover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+            transform: scale(1.05);
+        }
+
+        #canvas-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        #canvas-container {
+            position: relative;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            transform-origin: center center;
+            transition: none;
+        }
+
+        #meme-canvas {
+            display: block;
+            border-radius: 10px;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 繪圖畫布 - 修改：保存繪圖內容的關鍵 */
+        #draw-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        #draw-canvas.active {
+            cursor: crosshair;
+            pointer-events: all;
+        }
+
+        /* 文字框 */
+        .text-box {
+            position: absolute;
+            border: 2px solid transparent;
+            padding: 5px;
+            min-width: 100px;
+            min-height: 40px;
+            transition: border-color 0.2s;
+            cursor: move;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .text-box:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .text-box.active {
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .text-content {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            text-align: center;
+            overflow: hidden;
+            line-height: 1.2;
+            padding: 0;
+            pointer-events: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* 貼圖元素 */
+        .sticker-element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            transition: border-color 0.2s;
+            border: 2px solid transparent;
+            font-size: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .sticker-element:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .sticker-element.active {
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        /* PNG 覆蓋圖層 */
+        .overlay-element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            transition: border-color 0.2s;
+            border: 2px solid transparent;
+            z-index: 10;
+        }
+
+        .overlay-element:hover {
+            border-color: rgba(255, 165, 2, 0.5);
+        }
+
+        .overlay-element.active {
+            border-color: #ffa502;
+            box-shadow: 0 0 10px rgba(255, 165, 2, 0.5);
+        }
+
+        .overlay-element img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #00d4ff;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: nwse-resize;
+            right: -6px;
+            bottom: -6px;
+            display: none;
+            z-index: 20;
+        }
+
+        .text-box.active .resize-handle,
+        .sticker-element.active .resize-handle,
+        .overlay-element.active .resize-handle {
+            display: block;
+        }
+
+        /* 旋轉控制器 - 置於元素上方 */
+        .rotate-handle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #2ed573;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: grab;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 20;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .rotate-handle::after {
+            content: '↻';
+            font-weight: bold;
+        }
+
+        .text-box.active .rotate-handle,
+        .sticker-element.active .rotate-handle,
+        .overlay-element.active .rotate-handle {
+            display: flex;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
+            background: #ff4757;
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            z-index: 20;
+        }
+
+        .text-box.active .delete-btn,
+        .sticker-element.active .delete-btn,
+        .overlay-element.active .delete-btn {
+            display: flex;
+        }
+
+        .upload-prompt {
+            text-align: center;
+            color: #a0d2eb;
+        }
+
+        .upload-prompt-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            color: #00d4ff;
+        }
+
+        .upload-prompt-text {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .upload-prompt-hint {
+            font-size: 0.9em;
+            color: #a0d2eb;
+        }
+
+        .color-preview {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #00d4ff;
+            border-radius: 5px;
+            vertical-align: middle;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .hint {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            color: #a0d2eb;
+            margin-top: 10px;
+            border-left: 3px solid #00d4ff;
+        }
+
+        /* 響應式設計 - 改善小螢幕體驗 */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .control-panel {
+                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid #0f4c75;
+            }
+
+            .canvas-area {
+                min-height: 500px;
+            }
+        }
+
+        /* 滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f3460;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0d2eb;
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .text-box,
+        .sticker-element,
+        .overlay-element {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 梗圖產生器 ULTIMATE</h1>
+            <p>完美修復版 | 圖片立即顯示 · 繪圖保持 · 最佳布局</p>
+            <span class="version-badge">v6.0 | 🤖 AI協作夥伴：Claude Code | Cyclone</span>
+        </div>
+
+        <div class="main-content">
+            <!-- 左側控制面板 -->
+            <div class="control-panel">
+                <!-- 匯出下載 -->
+                <div class="control-section">
+                    <h3>💾 匯出梗圖</h3>
+                    <button class="btn btn-primary" onclick="exportMeme()">
+                        下載梗圖
+                    </button>
+                    <button class="btn btn-danger" onclick="clearAll()">
+                        清空重來
+                    </button>
+                </div>
+
+                <!-- 圖片上傳 -->
+                <div class="control-section">
+                    <h3>📁 圖片上傳</h3>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <button class="btn btn-primary" onclick="document.getElementById('imageUpload').click()">
+                        選擇底圖
+                    </button>
+                    <div class="hint">✨ 支援拖曳圖片到右側區域上傳</div>
+                </div>
+
+                <!-- PNG 覆蓋圖層 -->
+                <div class="control-section" id="overlaySection" style="display: none;">
+                    <h3>🖼️ PNG 覆蓋圖層</h3>
+                    <input type="file" id="overlayUpload" accept="image/png" style="display: none;">
+                    <button class="btn btn-warning" onclick="document.getElementById('overlayUpload').click()">
+                        ➕ 新增 PNG 圖片
+                    </button>
+                    <div class="hint">上傳透明 PNG 增加梗圖豐富度</div>
+                </div>
+
+                <!-- 文字框管理 -->
+                <div class="control-section">
+                    <h3>📝 文字框管理</h3>
+                    <button class="btn btn-success" onclick="addTextBox()">
+                        ➕ 新增文字框
+                    </button>
+                    <div class="hint">拖曳移動，右下角縮放，上方圖示旋轉</div>
+                </div>
+
+                <!-- 文字樣式設定 -->
+                <div class="control-section" id="textStyleSection" style="display: none;">
+                    <h3>🎨 文字樣式</h3>
+
+                    <div class="form-group">
+                        <label>文字內容</label>
+                        <input type="text" id="textContent" placeholder="輸入文字..." oninput="updateSelectedText()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>字體</label>
+                        <select id="fontFamily" onchange="updateSelectedText()">
+                            <option value="'Noto Sans TC', sans-serif">黑體（預設）</option>
+                            <option value="'Noto Serif TC', serif">明體</option>
+                            <option value="Impact, sans-serif">Impact（經典梗圖）</option>
+                            <option value="Arial Black, sans-serif">Arial Black</option>
+                            <option value="Comic Sans MS, cursive">Comic Sans MS</option>
+                            <option value="Courier New, monospace">等寬字體</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>字體大小（px）</label>
+                        <input type="range" id="fontSize" min="20" max="120" value="40" oninput="updateSelectedText()">
+                        <span id="fontSizeValue" style="color: #00d4ff;">40px</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>文字顏色</label>
+                        <input type="color" id="textColor" value="#ffffff" onchange="updateSelectedText()">
+                        <span class="color-preview" id="colorPreview" style="background-color: #ffffff;"></span>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="textBold" onchange="updateSelectedText()">
+                        <label for="textBold" style="margin-bottom: 0;">粗體</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>文字描邊顏色</label>
+                        <input type="color" id="strokeColor" value="#000000" onchange="updateSelectedText()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>描邊粗細</label>
+                        <input type="range" id="strokeWidth" min="0" max="10" value="3" oninput="updateSelectedText()">
+                        <span id="strokeWidthValue" style="color: #00d4ff;">3px</span>
+                    </div>
+                </div>
+
+                <!-- 圖片調整 -->
+                <div class="control-section" id="imageAdjustSection" style="display: none;">
+                    <h3>🎨 圖片調整</h3>
+
+                    <div class="form-group">
+                        <label>亮度：<span id="brightnessValue" style="color: #00d4ff;">100%</span></label>
+                        <input type="range" id="brightness" min="50" max="200" value="100" oninput="updateImageFilters()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>對比度：<span id="contrastValue" style="color: #00d4ff;">100%</span></label>
+                        <input type="range" id="contrast" min="50" max="200" value="100" oninput="updateImageFilters()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>飽和度：<span id="saturationValue" style="color: #00d4ff;">100%</span></label>
+                        <input type="range" id="saturation" min="0" max="200" value="100" oninput="updateImageFilters()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>黑白：<span id="grayscaleValue" style="color: #00d4ff;">0%</span></label>
+                        <input type="range" id="grayscale" min="0" max="100" value="0" oninput="updateImageFilters()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>懷舊：<span id="sepiaValue" style="color: #00d4ff;">0%</span></label>
+                        <input type="range" id="sepia" min="0" max="100" value="0" oninput="updateImageFilters()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>模糊：<span id="blurValue" style="color: #00d4ff;">0px</span></label>
+                        <input type="range" id="blur" min="0" max="10" value="0" oninput="updateImageFilters()">
+                    </div>
+
+                    <button class="btn btn-warning" onclick="resetFilters()">
+                        重置所有調整
+                    </button>
+
+                    <div class="hint">調整所有參數來達到最佳效果</div>
+                </div>
+
+                <!-- 貼圖庫 -->
+                <div class="control-section" id="stickerSection" style="display: none;">
+                    <h3>😀 貼圖庫</h3>
+                    <div class="sticker-grid" id="stickerGrid"></div>
+                    <div class="hint">點擊貼圖加入到梗圖中</div>
+                </div>
+            </div>
+
+            <!-- 右側畫布區域 -->
+            <div class="canvas-area">
+                <!-- 工具列 -->
+                <div class="toolbar" id="toolbar">
+                    <div class="toolbar-group">
+                        <span class="toolbar-label">縮放</span>
+                        <button class="toolbar-btn" onclick="zoomOut()">-</button>
+                        <span class="toolbar-label" id="zoomInfo">100%</span>
+                        <button class="toolbar-btn" onclick="zoomIn()">+</button>
+                        <button class="toolbar-btn" onclick="resetZoom()">重置</button>
+                    </div>
+                    <div class="toolbar-group">
+                        <span class="toolbar-label">旋轉</span>
+                        <button class="toolbar-btn" onclick="rotateImage(-90)">↶ 左轉</button>
+                        <button class="toolbar-btn" onclick="rotateImage(90)">↷ 右轉</button>
+                    </div>
+                    <div class="toolbar-group">
+                        <span class="toolbar-label">繪圖</span>
+                        <button class="toolbar-btn" id="drawToggle" onclick="toggleDrawMode()">✏️ 繪圖</button>
+                        <div class="draw-controls" id="drawControls" style="display: none;">
+                            <input type="color" id="drawColor" class="color-picker-small" value="#ff0000">
+                            <input type="range" id="brushSize" min="1" max="20" value="5" style="width: 80px;">
+                            <button class="toolbar-btn" onclick="clearDrawing()">清除</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="upload-prompt" class="upload-zone">
+                    <div class="upload-prompt">
+                        <div class="upload-prompt-icon">🖼️</div>
+                        <div class="upload-prompt-text">拖曳圖片到這裡</div>
+                        <div class="upload-prompt-hint">或點擊左側「選擇底圖」按鈕</div>
+                    </div>
+                </div>
+                <div id="canvas-wrapper" style="display: none;">
+                    <div id="canvas-container">
+                        <canvas id="meme-canvas"></canvas>
+                        <canvas id="draw-canvas"></canvas>
+                        <div id="elements-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let canvas = document.getElementById('meme-canvas');
+        let ctx = canvas.getContext('2d');
+        let drawCanvas = document.getElementById('draw-canvas');
+        let drawCtx = drawCanvas.getContext('2d');
+        let currentImage = null;
+        let elements = [];
+        let selectedElement = null;
+        let elementIdCounter = 0;
+
+        // 縮放和旋轉相關
+        let currentZoom = 100;
+        let currentRotation = 0;
+        let containerScale = 1;
+
+        // 儲存繪圖內容的 ImageData（修復縮放問題的關鍵）
+        let savedDrawing = null;
+
+        // 濾鏡設定
+        let filterSettings = {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+            grayscale: 0,
+            sepia: 0,
+            blur: 0
+        };
+
+        // 繪圖相關
+        let isDrawing = false;
+        let drawMode = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // 拖曳相關
+        let dragState = {
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            offsetX: 0,
+            offsetY: 0
+        };
+
+        // 縮放相關
+        let resizeState = {
+            isResizing: false,
+            startWidth: 0,
+            startHeight: 0,
+            startX: 0,
+            startY: 0,
+            originalSize: 0
+        };
+
+        // 旋轉相關
+        let rotateState = {
+            isRotating: false,
+            startAngle: 0,
+            currentAngle: 0
+        };
+
+        // 貼圖庫
+        const stickers = [
+            '😀', '😂', '🤣', '😭', '😍', '🥰', '😎', '🤔',
+            '😱', '🤯', '😡', '🤬', '💀', '👻', '💩', '🤡',
+            '👍', '👎', '👌', '✌️', '🤘', '💪', '🙏', '👏',
+            '❤️', '💔', '💯', '🔥', '⭐', '✨', '💥', '💫',
+            '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🎯', '🎪',
+            '➡️', '⬅️', '⬆️', '⬇️', '❌', '✅', '⚠️', '❓'
+        ];
+
+        // 初始化貼圖庫
+        function initStickers() {
+            const stickerGrid = document.getElementById('stickerGrid');
+            stickers.forEach(sticker => {
+                const stickerItem = document.createElement('div');
+                stickerItem.className = 'sticker-item';
+                stickerItem.textContent = sticker;
+                stickerItem.onclick = () => addSticker(sticker);
+                stickerGrid.appendChild(stickerItem);
+            });
+        }
+
+        // 更新圖片濾鏡
+        function updateImageFilters() {
+            filterSettings.brightness = parseInt(document.getElementById('brightness').value);
+            filterSettings.contrast = parseInt(document.getElementById('contrast').value);
+            filterSettings.saturation = parseInt(document.getElementById('saturation').value);
+            filterSettings.grayscale = parseInt(document.getElementById('grayscale').value);
+            filterSettings.sepia = parseInt(document.getElementById('sepia').value);
+            filterSettings.blur = parseInt(document.getElementById('blur').value);
+
+            document.getElementById('brightnessValue').textContent = filterSettings.brightness + '%';
+            document.getElementById('contrastValue').textContent = filterSettings.contrast + '%';
+            document.getElementById('saturationValue').textContent = filterSettings.saturation + '%';
+            document.getElementById('grayscaleValue').textContent = filterSettings.grayscale + '%';
+            document.getElementById('sepiaValue').textContent = filterSettings.sepia + '%';
+            document.getElementById('blurValue').textContent = filterSettings.blur + 'px';
+
+            applyFilters();
+        }
+
+        // 套用濾鏡
+        function applyFilters() {
+            const container = document.getElementById('canvas-container');
+            const filterString = `
+                brightness(${filterSettings.brightness}%)
+                contrast(${filterSettings.contrast}%)
+                saturate(${filterSettings.saturation}%)
+                grayscale(${filterSettings.grayscale}%)
+                sepia(${filterSettings.sepia}%)
+                blur(${filterSettings.blur}px)
+            `.trim();
+            container.style.filter = filterString;
+        }
+
+        // 重置濾鏡
+        function resetFilters() {
+            document.getElementById('brightness').value = 100;
+            document.getElementById('contrast').value = 100;
+            document.getElementById('saturation').value = 100;
+            document.getElementById('grayscale').value = 0;
+            document.getElementById('sepia').value = 0;
+            document.getElementById('blur').value = 0;
+            updateImageFilters();
+        }
+
+        // 保存繪圖內容
+        function saveDrawing() {
+            if (drawCanvas.width > 0 && drawCanvas.height > 0) {
+                savedDrawing = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+            }
+        }
+
+        // 恢復繪圖內容
+        function restoreDrawing() {
+            if (savedDrawing) {
+                drawCtx.putImageData(savedDrawing, 0, 0);
+            }
+        }
+
+        // 繪圖模式切換
+        function toggleDrawMode() {
+            drawMode = !drawMode;
+            const drawCanvasEl = document.getElementById('draw-canvas');
+            const drawToggle = document.getElementById('drawToggle');
+            const drawControls = document.getElementById('drawControls');
+
+            if (drawMode) {
+                drawCanvasEl.classList.add('active');
+                drawToggle.classList.add('active');
+                drawToggle.textContent = '🚫 關閉繪圖';
+                drawControls.style.display = 'flex';
+                // 取消所有元素選取
+                if (selectedElement) {
+                    selectedElement.classList.remove('active');
+                    selectedElement = null;
+                }
+            } else {
+                drawCanvasEl.classList.remove('active');
+                drawToggle.classList.remove('active');
+                drawToggle.textContent = '✏️ 繪圖';
+                drawControls.style.display = 'none';
+            }
+        }
+
+        // 清除繪圖
+        function clearDrawing() {
+            if (confirm('確定要清除所有繪圖嗎？')) {
+                drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                savedDrawing = null;
+            }
+        }
+
+        // 繪圖事件
+        drawCanvas.addEventListener('mousedown', (e) => {
+            if (!drawMode) return;
+            isDrawing = true;
+            const rect = drawCanvas.getBoundingClientRect();
+            lastX = (e.clientX - rect.left) * (drawCanvas.width / rect.width);
+            lastY = (e.clientY - rect.top) * (drawCanvas.height / rect.height);
+        });
+
+        drawCanvas.addEventListener('mousemove', (e) => {
+            if (!drawMode || !isDrawing) return;
+            const rect = drawCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (drawCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (drawCanvas.height / rect.height);
+
+            drawCtx.strokeStyle = document.getElementById('drawColor').value;
+            drawCtx.lineWidth = document.getElementById('brushSize').value;
+            drawCtx.lineCap = 'round';
+            drawCtx.lineJoin = 'round';
+
+            drawCtx.beginPath();
+            drawCtx.moveTo(lastX, lastY);
+            drawCtx.lineTo(x, y);
+            drawCtx.stroke();
+
+            lastX = x;
+            lastY = y;
+        });
+
+        drawCanvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            saveDrawing(); // 保存繪圖內容
+        });
+
+        drawCanvas.addEventListener('mouseleave', () => {
+            isDrawing = false;
+        });
+
+        // 拖曳上傳功能
+        const uploadZone = document.getElementById('upload-prompt');
+        const canvasArea = document.querySelector('.canvas-area');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, preventDefaults, false);
+            canvasArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.remove('dragover');
+            }, false);
+        });
+
+        uploadZone.addEventListener('drop', handleDrop, false);
+        canvasArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                handleImageFile(files[0]);
+            }
+        }
+
+        uploadZone.addEventListener('click', () => {
+            document.getElementById('imageUpload').click();
+        });
+
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageFile(file);
+            }
+        });
+
+        // PNG 覆蓋圖層上傳
+        document.getElementById('overlayUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleOverlayFile(file);
+            }
+        });
+
+        // 處理覆蓋圖層
+        function handleOverlayFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('請選擇圖片檔案！');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    addOverlay(img, event.target.result);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 新增覆蓋圖層
+        function addOverlay(img, src) {
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay-element';
+            overlay.id = 'element-' + (elementIdCounter++);
+
+            const overlayImg = document.createElement('img');
+            overlayImg.src = src;
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+
+            const rotateHandle = document.createElement('div');
+            rotateHandle.className = 'rotate-handle';
+
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = '×';
+
+            overlay.appendChild(overlayImg);
+            overlay.appendChild(resizeHandle);
+            overlay.appendChild(rotateHandle);
+            overlay.appendChild(deleteBtn);
+
+            const containerWidth = parseFloat(document.getElementById('canvas-container').style.width);
+            const containerHeight = parseFloat(document.getElementById('canvas-container').style.height);
+
+            const maxSize = 200;
+            let width = img.width;
+            let height = img.height;
+            const ratio = Math.min(maxSize / width, maxSize / height, 1);
+            width *= ratio;
+            height *= ratio;
+
+            overlay.style.left = (containerWidth / 2 - width / 2) + 'px';
+            overlay.style.top = (containerHeight / 2 - height / 2) + 'px';
+            overlay.style.width = width + 'px';
+            overlay.style.height = height + 'px';
+
+            overlay.dataset.rotation = '0';
+
+            overlay.addEventListener('mousedown', handleElementMouseDown);
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteElement(overlay.id);
+            });
+
+            document.getElementById('elements-container').appendChild(overlay);
+
+            const elementData = {
+                id: overlay.id,
+                element: overlay,
+                type: 'overlay',
+                img: img,
+                src: src
+            };
+            elements.push(elementData);
+
+            selectElement(overlay);
+        }
+
+        // 處理圖片檔案 - 修復：確保圖片立即顯示
+        function handleImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('請選擇圖片檔案！');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    currentImage = img;
+                    currentRotation = 0;
+
+                    // 先隱藏上傳區，顯示畫布區
+                    document.getElementById('upload-prompt').style.display = 'none';
+                    document.getElementById('canvas-wrapper').style.display = 'flex';
+
+                    // 使用 requestAnimationFrame 確保 DOM 更新後再設置畫布
+                    requestAnimationFrame(() => {
+                        setupCanvas(img);
+
+                        // 顯示所有控制區域
+                        document.getElementById('toolbar').classList.add('active');
+                        document.getElementById('stickerSection').style.display = 'block';
+                        document.getElementById('overlaySection').style.display = 'block';
+                        document.getElementById('imageAdjustSection').style.display = 'block';
+                    });
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 設置畫布 - 修復：確保正確計算和顯示
+        function setupCanvas(img) {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const wrapperRect = wrapper.getBoundingClientRect();
+
+            const maxWidth = wrapperRect.width * 0.95;
+            const maxHeight = wrapperRect.height * 0.95;
+
+            let displayWidth = img.width;
+            let displayHeight = img.height;
+
+            const widthRatio = maxWidth / img.width;
+            const heightRatio = maxHeight / img.height;
+            const ratio = Math.min(widthRatio, heightRatio, 1);
+
+            displayWidth = img.width * ratio;
+            displayHeight = img.height * ratio;
+
+            // 先設置畫布實際尺寸（原圖尺寸）
+            canvas.width = img.width;
+            canvas.height = img.height;
+            drawCanvas.width = img.width;
+            drawCanvas.height = img.height;
+
+            // 設置容器顯示尺寸
+            const container = document.getElementById('canvas-container');
+            container.style.width = displayWidth + 'px';
+            container.style.height = displayHeight + 'px';
+
+            // 繪製圖片
+            drawRotatedImage();
+
+            // 恢復繪圖內容（如果有）
+            restoreDrawing();
+
+            // 更新縮放比例
+            containerScale = displayWidth / img.width;
+
+            // 重置縮放
+            currentZoom = 100;
+            applyZoom();
+        }
+
+        // 繪製旋轉後的圖片
+        function drawRotatedImage() {
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate((currentRotation * Math.PI) / 180);
+            ctx.drawImage(currentImage, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+            ctx.restore();
+        }
+
+        // 圖片旋轉
+        function rotateImage(degrees) {
+            currentRotation = (currentRotation + degrees) % 360;
+            drawRotatedImage();
+        }
+
+        // 縮放功能 - 修復：保持繪圖內容
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom + 10, 200);
+            applyZoom();
+        }
+
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom - 10, 10);
+            applyZoom();
+        }
+
+        function resetZoom() {
+            currentZoom = 100;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            const container = document.getElementById('canvas-container');
+            const scale = currentZoom / 100;
+            container.style.transform = `scale(${scale})`;
+            document.getElementById('zoomInfo').textContent = currentZoom + '%';
+
+            // 繪圖內容會自動隨容器縮放，無需重繪
+        }
+
+        // 新增貼圖
+        function addSticker(emoji) {
+            if (!currentImage) {
+                alert('請先上傳圖片！');
+                return;
+            }
+
+            const sticker = document.createElement('div');
+            sticker.className = 'sticker-element';
+            sticker.id = 'element-' + (elementIdCounter++);
+            sticker.textContent = emoji;
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+
+            const rotateHandle = document.createElement('div');
+            rotateHandle.className = 'rotate-handle';
+
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = '×';
+
+            sticker.appendChild(resizeHandle);
+            sticker.appendChild(rotateHandle);
+            sticker.appendChild(deleteBtn);
+
+            const containerWidth = parseFloat(document.getElementById('canvas-container').style.width);
+            const containerHeight = parseFloat(document.getElementById('canvas-container').style.height);
+            sticker.style.left = (containerWidth / 2 - 25) + 'px';
+            sticker.style.top = (containerHeight / 2 - 25) + 'px';
+            sticker.style.width = '50px';
+            sticker.style.height = '50px';
+
+            sticker.dataset.rotation = '0';
+
+            sticker.addEventListener('mousedown', handleElementMouseDown);
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteElement(sticker.id);
+            });
+
+            document.getElementById('elements-container').appendChild(sticker);
+
+            const elementData = {
+                id: sticker.id,
+                element: sticker,
+                type: 'sticker',
+                content: emoji
+            };
+            elements.push(elementData);
+
+            selectElement(sticker);
+        }
+
+        // 新增文字框
+        function addTextBox() {
+            if (!currentImage) {
+                alert('請先上傳圖片！');
+                return;
+            }
+
+            const textBox = document.createElement('div');
+            textBox.className = 'text-box';
+            textBox.id = 'element-' + (elementIdCounter++);
+
+            const textContent = document.createElement('div');
+            textContent.className = 'text-content';
+            textContent.textContent = '梗圖文字';
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+
+            const rotateHandle = document.createElement('div');
+            rotateHandle.className = 'rotate-handle';
+
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = '×';
+
+            textBox.appendChild(textContent);
+            textBox.appendChild(resizeHandle);
+            textBox.appendChild(rotateHandle);
+            textBox.appendChild(deleteBtn);
+
+            const containerWidth = parseFloat(document.getElementById('canvas-container').style.width);
+            const containerHeight = parseFloat(document.getElementById('canvas-container').style.height);
+            textBox.style.left = (containerWidth / 2 - 100) + 'px';
+            textBox.style.top = (containerHeight / 2 - 20) + 'px';
+            textBox.style.width = '200px';
+            textBox.style.height = '50px';
+
+            textBox.dataset.rotation = '0';
+
+            const initialStyle = {
+                fontFamily: "'Noto Sans TC', sans-serif",
+                fontSize: 40,
+                color: '#ffffff',
+                bold: false,
+                strokeColor: '#000000',
+                strokeWidth: 3
+            };
+            applyTextStyle(textBox, initialStyle);
+
+            textBox.addEventListener('mousedown', handleElementMouseDown);
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteElement(textBox.id);
+            });
+
+            document.getElementById('elements-container').appendChild(textBox);
+
+            const elementData = {
+                id: textBox.id,
+                element: textBox,
+                type: 'text',
+                style: initialStyle
+            };
+            elements.push(elementData);
+
+            selectElement(textBox);
+            document.getElementById('textStyleSection').style.display = 'block';
+        }
+
+        // 元素滑鼠按下事件
+        function handleElementMouseDown(e) {
+            if (drawMode) return;
+
+            if (e.target.classList.contains('delete-btn')) {
+                return;
+            }
+
+            const element = e.currentTarget;
+            selectElement(element);
+
+            if (e.target.classList.contains('resize-handle')) {
+                startResize(e, element);
+            } else if (e.target.classList.contains('rotate-handle')) {
+                startRotate(e, element);
+            } else {
+                startDrag(e, element);
+            }
+        }
+
+        // 開始拖曳 - 修復：考慮縮放比例
+        function startDrag(e, element) {
+            e.preventDefault();
+
+            const rect = element.getBoundingClientRect();
+            const containerRect = document.getElementById('canvas-container').getBoundingClientRect();
+
+            // 計算元素在容器內的實際位置（未縮放前的座標）
+            const currentLeft = parseFloat(element.style.left) || 0;
+            const currentTop = parseFloat(element.style.top) || 0;
+
+            // 計算滑鼠相對於元素的偏移（考慮縮放）
+            const scale = currentZoom / 100;
+            const offsetX = (e.clientX - rect.left) / scale;
+            const offsetY = (e.clientY - rect.top) / scale;
+
+            dragState = {
+                isDragging: true,
+                startX: e.clientX,
+                startY: e.clientY,
+                offsetX: offsetX,
+                offsetY: offsetY,
+                elementLeft: currentLeft,
+                elementTop: currentTop
+            };
+
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
+        }
+
+        function handleDragMove(e) {
+            if (!dragState.isDragging || !selectedElement) return;
+
+            const containerRect = document.getElementById('canvas-container').getBoundingClientRect();
+            const scale = currentZoom / 100;
+
+            // 計算滑鼠在容器內的位置（考慮縮放）
+            const mouseXInContainer = (e.clientX - containerRect.left) / scale;
+            const mouseYInContainer = (e.clientY - containerRect.top) / scale;
+
+            // 計算新位置（未縮放座標）
+            let newX = mouseXInContainer - dragState.offsetX;
+            let newY = mouseYInContainer - dragState.offsetY;
+
+            const containerWidth = parseFloat(document.getElementById('canvas-container').style.width);
+            const containerHeight = parseFloat(document.getElementById('canvas-container').style.height);
+
+            newX = Math.max(0, Math.min(newX, containerWidth - selectedElement.offsetWidth));
+            newY = Math.max(0, Math.min(newY, containerHeight - selectedElement.offsetHeight));
+
+            selectedElement.style.left = newX + 'px';
+            selectedElement.style.top = newY + 'px';
+        }
+
+        function handleDragEnd() {
+            dragState.isDragging = false;
+            document.removeEventListener('mousemove', handleDragMove);
+            document.removeEventListener('mouseup', handleDragEnd);
+        }
+
+        // 開始縮放
+        function startResize(e, element) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const elementData = elements.find(el => el.id === element.id);
+
+            resizeState = {
+                isResizing: true,
+                startX: e.clientX,
+                startY: e.clientY,
+                startWidth: element.offsetWidth,
+                startHeight: element.offsetHeight,
+                originalSize: elementData.type === 'text' ? elementData.style.fontSize : 50
+            };
+
+            document.addEventListener('mousemove', handleResizeMove);
+            document.addEventListener('mouseup', handleResizeEnd);
+        }
+
+        function handleResizeMove(e) {
+            if (!resizeState.isResizing || !selectedElement) return;
+
+            const scale = currentZoom / 100;
+            const deltaX = (e.clientX - resizeState.startX) / scale;
+            const deltaY = (e.clientY - resizeState.startY) / scale;
+
+            const newWidth = Math.max(50, resizeState.startWidth + deltaX);
+            const newHeight = Math.max(50, resizeState.startHeight + deltaY);
+
+            selectedElement.style.width = newWidth + 'px';
+            selectedElement.style.height = newHeight + 'px';
+
+            const elementData = elements.find(el => el.id === selectedElement.id);
+            if (elementData.type === 'text') {
+                const scale = newWidth / resizeState.startWidth;
+                const newFontSize = Math.round(resizeState.originalSize * scale);
+                elementData.style.fontSize = Math.max(12, Math.min(120, newFontSize));
+                applyTextStyle(selectedElement, elementData.style);
+
+                document.getElementById('fontSize').value = elementData.style.fontSize;
+                document.getElementById('fontSizeValue').textContent = elementData.style.fontSize + 'px';
+            } else if (elementData.type === 'sticker') {
+                selectedElement.style.fontSize = Math.max(20, newWidth) + 'px';
+            }
+        }
+
+        function handleResizeEnd() {
+            resizeState.isResizing = false;
+            document.removeEventListener('mousemove', handleResizeMove);
+            document.removeEventListener('mouseup', handleResizeEnd);
+        }
+
+        // 開始旋轉
+        function startRotate(e, element) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+            const currentRotation = parseFloat(element.dataset.rotation) || 0;
+
+            rotateState = {
+                isRotating: true,
+                startAngle: startAngle,
+                currentAngle: currentRotation,
+                centerX: centerX,
+                centerY: centerY
+            };
+
+            document.addEventListener('mousemove', handleRotateMove);
+            document.addEventListener('mouseup', handleRotateEnd);
+        }
+
+        function handleRotateMove(e) {
+            if (!rotateState.isRotating || !selectedElement) return;
+
+            const rect = selectedElement.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+            const angleDiff = currentAngle - rotateState.startAngle;
+            const newRotation = rotateState.currentAngle + angleDiff;
+
+            selectedElement.style.transform = `rotate(${newRotation}deg)`;
+            selectedElement.dataset.rotation = newRotation;
+        }
+
+        function handleRotateEnd() {
+            rotateState.isRotating = false;
+            document.removeEventListener('mousemove', handleRotateMove);
+            document.removeEventListener('mouseup', handleRotateEnd);
+        }
+
+        // 選中元素
+        function selectElement(element) {
+            document.querySelectorAll('.text-box, .sticker-element, .overlay-element').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            element.classList.add('active');
+            selectedElement = element;
+
+            const elementData = elements.find(el => el.id === element.id);
+            if (elementData && elementData.type === 'text') {
+                document.getElementById('textContent').value = element.querySelector('.text-content').textContent;
+                document.getElementById('fontFamily').value = elementData.style.fontFamily;
+                document.getElementById('fontSize').value = elementData.style.fontSize;
+                document.getElementById('fontSizeValue').textContent = elementData.style.fontSize + 'px';
+                document.getElementById('textColor').value = elementData.style.color;
+                document.getElementById('colorPreview').style.backgroundColor = elementData.style.color;
+                document.getElementById('textBold').checked = elementData.style.bold;
+                document.getElementById('strokeColor').value = elementData.style.strokeColor;
+                document.getElementById('strokeWidth').value = elementData.style.strokeWidth;
+                document.getElementById('strokeWidthValue').textContent = elementData.style.strokeWidth + 'px';
+                document.getElementById('textStyleSection').style.display = 'block';
+            }
+        }
+
+        // 更新選中文字框的樣式
+        function updateSelectedText() {
+            if (!selectedElement) return;
+
+            const elementData = elements.find(el => el.id === selectedElement.id);
+            if (!elementData || elementData.type !== 'text') return;
+
+            const textContent = selectedElement.querySelector('.text-content');
+            textContent.textContent = document.getElementById('textContent').value;
+
+            elementData.style = {
+                fontFamily: document.getElementById('fontFamily').value,
+                fontSize: parseInt(document.getElementById('fontSize').value),
+                color: document.getElementById('textColor').value,
+                bold: document.getElementById('textBold').checked,
+                strokeColor: document.getElementById('strokeColor').value,
+                strokeWidth: parseInt(document.getElementById('strokeWidth').value)
+            };
+
+            applyTextStyle(selectedElement, elementData.style);
+
+            document.getElementById('fontSizeValue').textContent = elementData.style.fontSize + 'px';
+            document.getElementById('colorPreview').style.backgroundColor = elementData.style.color;
+            document.getElementById('strokeWidthValue').textContent = elementData.style.strokeWidth + 'px';
+        }
+
+        // 應用文字樣式
+        function applyTextStyle(textBox, style) {
+            const textContent = textBox.querySelector('.text-content');
+            textContent.style.fontFamily = style.fontFamily;
+            textContent.style.fontSize = style.fontSize + 'px';
+            textContent.style.color = style.color;
+            textContent.style.fontWeight = style.bold ? 'bold' : 'normal';
+
+            if (style.strokeWidth > 0) {
+                textContent.style.textShadow = `
+                    -${style.strokeWidth}px -${style.strokeWidth}px 0 ${style.strokeColor},
+                    ${style.strokeWidth}px -${style.strokeWidth}px 0 ${style.strokeColor},
+                    -${style.strokeWidth}px ${style.strokeWidth}px 0 ${style.strokeColor},
+                    ${style.strokeWidth}px ${style.strokeWidth}px 0 ${style.strokeColor}
+                `;
+            } else {
+                textContent.style.textShadow = 'none';
+            }
+        }
+
+        // 刪除元素
+        function deleteElement(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+                elements = elements.filter(el => el.id !== id);
+                if (selectedElement && selectedElement.id === id) {
+                    selectedElement = null;
+                    document.getElementById('textStyleSection').style.display = 'none';
+                }
+            }
+        }
+
+        // 匯出梗圖
+        function exportMeme() {
+            if (!currentImage) {
+                alert('請先上傳圖片！');
+                return;
+            }
+
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = canvas.width;
+            exportCanvas.height = canvas.height;
+            const exportCtx = exportCanvas.getContext('2d');
+
+            // 套用濾鏡
+            const filterString = `
+                brightness(${filterSettings.brightness}%)
+                contrast(${filterSettings.contrast}%)
+                saturate(${filterSettings.saturation}%)
+                grayscale(${filterSettings.grayscale}%)
+                sepia(${filterSettings.sepia}%)
+                blur(${filterSettings.blur}px)
+            `.trim();
+            exportCtx.filter = filterString;
+
+            exportCtx.drawImage(canvas, 0, 0);
+            exportCtx.filter = 'none';
+
+            // 繪製繪圖層
+            exportCtx.drawImage(drawCanvas, 0, 0);
+
+            const scaleRatio = canvas.width / parseFloat(document.getElementById('canvas-container').style.width);
+
+            elements.forEach(elementData => {
+                const element = elementData.element;
+                const rect = element.getBoundingClientRect();
+                const containerRect = document.getElementById('canvas-container').getBoundingClientRect();
+
+                const x = (rect.left - containerRect.left) / (currentZoom / 100) * scaleRatio;
+                const y = (rect.top - containerRect.top) / (currentZoom / 100) * scaleRatio;
+                const width = element.offsetWidth * scaleRatio;
+                const height = element.offsetHeight * scaleRatio;
+                const rotation = parseFloat(element.dataset.rotation) || 0;
+
+                exportCtx.save();
+                exportCtx.translate(x + width / 2, y + height / 2);
+                exportCtx.rotate((rotation * Math.PI) / 180);
+
+                if (elementData.type === 'sticker') {
+                    exportCtx.font = `${Math.max(20, width)}px Arial`;
+                    exportCtx.textAlign = 'center';
+                    exportCtx.textBaseline = 'middle';
+                    exportCtx.fillText(elementData.content, 0, 0);
+                } else if (elementData.type === 'overlay') {
+                    exportCtx.drawImage(elementData.img, -width / 2, -height / 2, width, height);
+                } else if (elementData.type === 'text') {
+                    const textContent = element.querySelector('.text-content');
+                    const text = textContent.textContent;
+                    if (text) {
+                        const style = elementData.style;
+                        const scaledFontSize = style.fontSize * scaleRatio;
+
+                        exportCtx.font = `${style.bold ? 'bold' : 'normal'} ${scaledFontSize}px ${style.fontFamily}`;
+                        exportCtx.textAlign = 'center';
+                        exportCtx.textBaseline = 'top';
+
+                        const lines = text.split('\n');
+                        const lineHeight = scaledFontSize * 1.2;
+
+                        lines.forEach((line, index) => {
+                            const currentY = -height / 2 + 10 * scaleRatio + (index * lineHeight);
+
+                            if (style.strokeWidth > 0) {
+                                exportCtx.strokeStyle = style.strokeColor;
+                                exportCtx.lineWidth = style.strokeWidth * 2 * scaleRatio;
+                                exportCtx.strokeText(line, 0, currentY);
+                            }
+
+                            exportCtx.fillStyle = style.color;
+                            exportCtx.fillText(line, 0, currentY);
+                        });
+                    }
+                }
+
+                exportCtx.restore();
+            });
+
+            exportCanvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'meme-ultimate-v6-' + Date.now() + '.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        // 清空重來
+        function clearAll() {
+            if (!confirm('確定要清空所有內容並重新開始嗎？')) return;
+
+            document.getElementById('elements-container').innerHTML = '';
+            elements = [];
+            selectedElement = null;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            savedDrawing = null;
+            currentImage = null;
+            currentRotation = 0;
+            drawMode = false;
+
+            document.getElementById('upload-prompt').style.display = 'flex';
+            document.getElementById('canvas-wrapper').style.display = 'none';
+            document.getElementById('toolbar').classList.remove('active');
+            document.getElementById('stickerSection').style.display = 'none';
+            document.getElementById('overlaySection').style.display = 'none';
+            document.getElementById('imageAdjustSection').style.display = 'none';
+            document.getElementById('textStyleSection').style.display = 'none';
+
+            document.getElementById('imageUpload').value = '';
+            document.getElementById('drawToggle').classList.remove('active');
+            document.getElementById('drawToggle').textContent = '✏️ 繪圖';
+            document.getElementById('drawControls').style.display = 'none';
+
+            resetFilters();
+        }
+
+        // 點擊畫布外取消選中
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.text-box') &&
+                !e.target.closest('.sticker-element') &&
+                !e.target.closest('.overlay-element') &&
+                !e.target.closest('.control-panel')) {
+                if (selectedElement) {
+                    selectedElement.classList.remove('active');
+                    selectedElement = null;
+                }
+            }
+        });
+
+        // 視窗大小改變時重新調整
+        window.addEventListener('resize', function() {
+            if (currentImage) {
+                saveDrawing(); // 先保存繪圖
+                setupCanvas(currentImage); // 重新設置畫布
+            }
+        });
+
+        // 初始化
+        initStickers();
+    </script>
+</body>
+</html>
