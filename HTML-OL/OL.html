@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>國姓國小資源班代課事項生成器</title>
+    <style>
+        /* --- 基礎暗色系樣式 --- */
+        :root {
+            --color-bg: #1f2125;
+            --color-text: #e0e0e0;
+            --color-primary: #4CAF50; /* 綠色 */
+            --color-secondary: #33363b; /* 卡片/輸入框背景 */
+            --color-border: #444;
+            --color-hover: #45a049;
+            --color-memo: #2a2d30; /* 備忘錄背景 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding: 25px;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            color: var(--color-primary);
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 8px;
+        }
+
+        /* --- 1. 設置區域 --- */
+        .setup-controls {
+            background-color: var(--color-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .setup-controls label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        input[type="date"] {
+            background-color: #2a2d30;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            padding: 8px;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn {
+            background-color: var(--color-primary);
+            color: #111;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--color-hover);
+        }
+
+        .btn-print {
+            background-color: #0277bd; /* 藍色 */
+            color: #fff;
+        }
+        .btn-print:hover {
+            background-color: #039be5;
+        }
+
+        /* --- 2. 內容輸出區域樣式 --- */
+        #checklist-container {
+            border: 1px dashed var(--color-border);
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 200px;
+            margin-top: 20px;
+        }
+
+        .period-block {
+            background-color: var(--color-secondary);
+            border-left: 5px solid var(--color-primary);
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .period-block h3 {
+            margin-top: 0;
+            color: #fff;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+
+        /* 交辦事項區域 */
+        .task-input {
+            background-color: var(--color-memo);
+            min-height: 100px; /* 給予足夠的編輯空間 */
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--color-border);
+            outline: none;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .task-input:empty::before {
+            content: "請點此輸入交辦事項，可輸入多行，並按 Shift+Enter 換行。";
+            color: #888;
+            font-style: italic;
+        }
+
+        /* 備忘錄區域 */
+        .memo-label {
+            font-weight: bold;
+            color: #ccc;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .memo-space {
+            background-color: var(--color-memo);
+            min-height: 80px; /* 給代課老師留白的空間 */
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px dashed #777; /* 虛線邊框，更像筆記本 */
+            outline: none;
+        }
+        
+        .memo-space:empty::before {
+             content: " (代課老師備忘錄空間)";
+            color: #888;
+            font-style: italic;
+        }
+
+        /* 簽名欄位 */
+        .signature-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 50px;
+            padding: 20px 0;
+        }
+
+        .signature-area p {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ccc;
+        }
+
+        /* --- 3. 列印樣式 (關鍵) --- */
+        @media print {
+            body {
+                background-color: #fff; 
+                color: #000; 
+                padding: 15px; /* 留出 A4 邊距 */
+            }
+
+            .setup-controls, .btn, .btn-print {
+                display: none; /* 列印時隱藏控制元件 */
+            }
+
+            #checklist-container {
+                border: none; /* 列印時隱藏外虛線 */
+                padding: 0;
+            }
+
+            h1, h2, h3 {
+                color: #000;
+                border-bottom: 1px solid #ccc;
+            }
+
+            .period-block {
+                background-color: #fff; /* 列印時強制白底 */
+                border-left: 5px solid #aaa;
+                color: #000;
+                page-break-inside: avoid; 
+            }
+
+            /* 清空背景，確保列印清晰 */
+            .task-input, .memo-space {
+                background-color: #fff;
+                border: 1px solid #000; /* 列印時使用黑色邊框 */
+                color: #000;
+                min-height: 80px; /* 確保留白空間被保留 */
+                box-shadow: none;
+            }
+            .memo-space {
+                border: 1px dashed #000; /* 備忘錄使用黑色虛線 */
+            }
+
+            /* 確保 contenteditable 的 placeholder 不會被印出來 */
+            .task-input:empty::before, .memo-space:empty::before {
+                content: " "; /* 列印時隱藏提示文字 */
+                color: #000;
+            }
+
+            .signature-area p {
+                color: #000;
+                border-top: 1px solid #000; /* 簽名底線 */
+                padding-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- 1. 設置區域 -->
+    <div class="setup-controls">
+        <label for="trip-date">請選擇出差日期：</label>
+        <input type="date" id="trip-date">
+        <button class="btn" id="generateBtn">1. 帶入當日課表</button>
+        <button class="btn btn-print" id="printBtn" style="margin-left: auto;">2. 產生PDF/列印</button>
+    </div>
+
+    <!-- 2. 內容輸出區域 -->
+    <div id="checklist-container">
+        <p>請先選擇日期，然後點擊 "帶入當日課表"。您可以在生成的區塊內直接輸入交辦事項與備註。</p>
+    </div>
+
+    <script>
+        // --- JavaScript 邏輯 ---
+
+        /**
+         * 1. 您的每週課表 (核心數據)
+         * 請在此修改成您自己的課表
+         * 0=星期日, 1=星期一, 2=星期二, ... 6=星期六
+         */
+        const weeklySchedule = {
+            // 星期一
+            1: [
+                { period: "早自習", time: "07:50-08:30", subject: "特生A", class: "資源班" },
+                { period: "第一節", time: "08:40-09:20", subject: "4A數學", class: "資源班" },
+                { period: "第二節", time: "09:30-10:10", subject: "3A數學", class: "資源班" },
+                { period: "第四節", time: "11:20-12:00", subject: "5A數學", class: "資源班" },
+            ],
+            // 星期二
+            2: [                
+                { period: "第一節", time: "08:40-09:20", subject: "4A數學", class: "資源班" },
+                { period: "第二節", time: "09:30-10:10", subject: "3A數學", class: "資源班" },
+                { period: "第四節", time: "11:20-12:00", subject: "5A數學", class: "資源班" },
+            ],
+            // 星期三
+            3: [
+                { period: "早自習", time: "07:50-08:30", subject: "特生A", class: "資源班" },
+                { period: "第一節", time: "08:40-09:20", subject: "5A數學", class: "資源班" },
+                { period: "第二節", time: "09:30-10:10", subject: "3A數學", class: "資源班" },
+                { period: "第四節", time: "11:20-12:00", subject: "4A數學", class: "資源班" },
+            ],
+            // 星期四
+            4:[
+                { period: "早自習", time: "07:50-08:30", subject: "特生A", class: "資源班" },
+                { period: "第一節", time: "08:40-09:20", subject: "4A數學", class: "資源班" },
+                { period: "第三節", time: "10:30-11:10", subject: "3A數學", class: "資源班" },
+                { period: "第四節", time: "11:20-12:00", subject: "5A數學", class: "資源班" },
+            ],
+            // 星期五
+            5: [
+                { period: "早自習", time: "07:30-08:00", subject: "導師時間", class: "三年一班" },
+                { period: "第一節", time: "08:10-08:50", subject: "國文", class: "三年二班" },
+                { period: "第二節", time: "09:00-09:40", subject: "空堂", class: "教師室" },
+                { period: "第三節", time: "10:00-10:40", subject: "國文", class: "三年一班" },
+                { period: "第四節", time: "11:00-11:40", subject: "空堂", class: "教師室" },
+                { period: "午休", time: "12:00-12:30", subject: "導師時間", class: "三年一班" }
+            ],
+            // 週末 (留空)
+            0: [],
+            6: []
+        };
+        const weekDayMap = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+
+        // --- 2. 獲取元素 ---
+        const generateBtn = document.getElementById('generateBtn');
+        const printBtn = document.getElementById('printBtn');
+        const dateInput = document.getElementById('trip-date');
+        const container = document.getElementById('checklist-container');
+
+        // --- 3. 核心功能：生成課表區塊 ---
+        generateBtn.onclick = function() {
+            const selectedDate = dateInput.value;
+            if (!selectedDate) {
+                console.error("未選擇日期。");
+                // 使用 console.error 取代 alert()
+                container.innerHTML = `<p style="color:red;">錯誤：請先選擇一個日期！</p>`;
+                return;
+            }
+
+            const dateObj = new Date(selectedDate.replace(/-/g, '/')); // 確保日期格式正確
+            const dayOfWeek = dateObj.getDay();
+            const scheduleForDay = weeklySchedule[dayOfWeek];
+            
+            const dateString = dateObj.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            // 清空容器，開始生成內容
+            container.innerHTML = '';
+
+            // 標題
+            const title = document.createElement('h2');
+            title.textContent = `${dateString} (${weekDayMap[dayOfWeek]}) - 代課事項清單`;
+            container.appendChild(title);
+
+            // 檢查是否有課
+            if (!scheduleForDay || scheduleForDay.length === 0) {
+                const noClass = document.createElement('p');
+                noClass.textContent = "當天為週末或課表無資料，請確認。";
+                container.appendChild(noClass);
+                
+                // 仍顯示簽名欄位
+                addSignatureArea(); 
+                return;
+            }
+
+            // 遍歷課表，生成輸入區塊
+            scheduleForDay.forEach((period, index) => {
+                const block = document.createElement('div');
+                block.className = 'period-block';
+
+                // 標題 (e.g., 08:10-08:50 | 第一節 | 國文 (三年一班))
+                const periodTitle = document.createElement('h3');
+                periodTitle.textContent = `${period.time} | ${period.period} | ${period.subject} (${period.class})`;
+                
+                // 1. 交辦事項輸入區塊 (可輸入多行、可含checkbox)
+                const taskInput = document.createElement('div');
+                taskInput.className = 'task-input';
+                taskInput.contentEditable = true; 
+                taskInput.innerHTML = `
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 5px;"><input type="checkbox"> </li>
+                        <li style="margin-bottom: 5px;"><input type="checkbox"> </li>
+						<li style="margin-bottom: 5px;"><input type="checkbox"> </li>
+	                </ul>
+                `; // 預設提供兩個範例 checkbox
+
+                // 2. 代課老師備忘錄區塊
+                const memoLabel = document.createElement('span');
+                memoLabel.className = 'memo-label';
+                memoLabel.textContent = "📝 代課老師備忘錄 / 課堂紀錄：";
+
+                const memoSpace = document.createElement('div');
+                memoSpace.className = 'memo-space';
+                memoSpace.contentEditable = true; 
+
+                // 組合區塊
+                block.appendChild(periodTitle);
+                block.appendChild(taskInput);
+                block.appendChild(memoLabel);
+                block.appendChild(memoSpace);
+                container.appendChild(block);
+            });
+
+            // 3. 簽名欄位
+            addSignatureArea();
+        };
+
+        /**
+         * 新增簽名欄位到容器底部
+         */
+        function addSignatureArea() {
+             const sigArea = document.createElement('div');
+            sigArea.className = 'signature-area';
+            sigArea.innerHTML = '<p>教師簽名: <span style="display: inline-block; width: 250px; border-bottom: 1px solid var(--color-text);"></span></p>';
+            container.appendChild(sigArea);
+        }
+
+
+        // --- 4. 綁定「列印」按鈕事件 ---
+        printBtn.onclick = function() {
+            // 提醒使用者如何處理Word檔
+            console.info("如果要輸出 Word 檔案，請手動複製內容貼上。");
+            // 觸發瀏覽器的列印功能 (用於產生 PDF)
+            window.print();
+        };
+
+        // 初始化時自動生成今天的課表 (可選)
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            dateInput.value = `${year}-${month}-${day}`;
+            // generateBtn.click(); // 可選：一載入就自動生成今日課表
+        });
+    </script>
+</body>
+</html>
