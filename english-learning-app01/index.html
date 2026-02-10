@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語反射力 — A1 到 C1 學習路徑</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a26;
+  --border: #2a2a3a;
+  --text: #e8e6f0;
+  --text-dim: #8a87a0;
+  --accent: #ff6b35;
+  --accent2: #ffd166;
+  --a1: #4ecdc4;
+  --a2: #45b7d1;
+  --b1: #6c5ce7;
+  --b2: #a855f7;
+  --c1: #f472b6;
+  --c2: #ff6b35;
+  --success: #22c55e;
+  --error: #ef4444;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Nav */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700; font-size: 18px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-tabs {
+  display: flex; gap: 4px;
+}
+.nav-tab {
+  padding: 8px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  background: transparent; border: none; color: var(--text-dim);
+}
+.nav-tab:hover { color: var(--text); background: var(--surface2); }
+.nav-tab.active { color: var(--accent); background: rgba(255,107,53,0.1); }
+
+/* Main */
+main { padding-top: 60px; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* Hero */
+.hero {
+  padding: 80px 24px 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,107,53,0.06) 0%, transparent 50%);
+  animation: pulse 8s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.hero h1 {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 900; font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.2; margin-bottom: 16px;
+  position: relative;
+}
+.hero h1 span {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero p { color: var(--text-dim); font-size: 18px; max-width: 600px; margin: 0 auto 32px; position: relative; }
+
+/* Level Cards */
+.level-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; max-width: 800px; margin: 0 auto; padding: 0 24px;
+  position: relative;
+}
+.level-card {
+  padding: 20px 16px; border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer; transition: all 0.3s;
+  text-align: center;
+}
+.level-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+.level-card .badge {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700; font-size: 14px; margin-bottom: 8px;
+}
+.level-card[data-level="a1"] .badge { background: rgba(78,205,196,0.15); color: var(--a1); }
+.level-card[data-level="a2"] .badge { background: rgba(69,183,209,0.15); color: var(--a2); }
+.level-card[data-level="b1"] .badge { background: rgba(108,92,231,0.15); color: var(--b1); }
+.level-card[data-level="b2"] .badge { background: rgba(168,85,247,0.15); color: var(--b2); }
+.level-card[data-level="c1"] .badge { background: rgba(244,114,182,0.15); color: var(--c1); }
+.level-card[data-level="c2"] .badge { background: rgba(255,107,53,0.15); color: var(--c2); }
+.level-card .title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.level-card .sub { font-size: 12px; color: var(--text-dim); }
+
+/* Content Area */
+.content-area {
+  max-width: 900px; margin: 0 auto; padding: 40px 24px;
+}
+
+/* Module */
+.module {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 24px;
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.module-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+.module-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.module-title { font-weight: 700; font-size: 20px; }
+.module-desc { color: var(--text-dim); font-size: 14px; line-height: 1.7; margin-bottom: 20px; }
+
+/* Chunk highlight */
+.chunk {
+  display: inline; padding: 2px 6px; border-radius: 4px;
+  font-weight: 600;
+}
+.chunk-verb { background: rgba(255,107,53,0.15); color: var(--accent); }
+.chunk-noun { background: rgba(78,205,196,0.15); color: var(--a1); }
+.chunk-phrase { background: rgba(108,92,231,0.15); color: var(--b1); }
+.chunk-frame { background: rgba(244,114,182,0.15); color: var(--c1); }
+
+/* Exercise */
+.exercise-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 16px;
+}
+.exercise-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--accent);
+  margin-bottom: 12px;
+}
+.exercise-prompt {
+  font-size: 16px; font-weight: 500;
+  margin-bottom: 16px; line-height: 1.6;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #ff8c5a);
+  color: #fff;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(255,107,53,0.3); }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text); border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+
+/* Scenario cards */
+.scenario-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px; margin-top: 16px;
+}
+.scenario-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+  cursor: pointer; transition: all 0.25s;
+}
+.scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.scenario-card .emoji { font-size: 28px; margin-bottom: 8px; }
+.scenario-card .name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.scenario-card .desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+/* Chunk practice */
+.chunk-practice {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 16px 0;
+}
+.chunk-pill {
+  padding: 8px 16px; border-radius: 20px;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  user-select: none;
+}
+.chunk-pill:hover { border-color: var(--accent); }
+.chunk-pill.selected { background: rgba(255,107,53,0.15); border-color: var(--accent); color: var(--accent); }
+.chunk-pill.correct { background: rgba(34,197,94,0.15); border-color: var(--success); color: var(--success); }
+.chunk-pill.wrong { background: rgba(239,68,68,0.15); border-color: var(--error); color: var(--error); }
+
+/* Answer area */
+.answer-slots {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  min-height: 48px; padding: 16px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  margin: 12px 0;
+  align-items: center;
+}
+.answer-slot {
+  padding: 8px 16px; border-radius: 20px;
+  font-size: 14px; font-weight: 500;
+  background: rgba(255,107,53,0.1);
+  color: var(--accent);
+  cursor: pointer;
+}
+.answer-slot:hover { opacity: 0.7; }
+
+/* Feedback */
+.feedback {
+  padding: 12px 16px; border-radius: 10px;
+  font-size: 14px; margin-top: 12px;
+  display: none;
+}
+.feedback.show { display: block; animation: fadeIn 0.3s; }
+.feedback.success { background: rgba(34,197,94,0.1); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
+.feedback.error { background: rgba(239,68,68,0.1); color: var(--error); border: 1px solid rgba(239,68,68,0.2); }
+.feedback.info { background: rgba(69,183,209,0.1); color: var(--a2); border: 1px solid rgba(69,183,209,0.2); }
+
+/* Respeak */
+.respeak-area {
+  text-align: center; padding: 24px;
+}
+.respeak-sentence {
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 8px; line-height: 1.5;
+}
+.respeak-translation {
+  font-size: 14px; color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.respeak-chunks {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 6px; margin-bottom: 20px;
+}
+.respeak-chunk {
+  padding: 6px 14px; border-radius: 8px;
+  font-size: 14px; background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+.respeak-chunk.highlight {
+  background: rgba(255,107,53,0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.play-btn {
+  width: 56px; height: 56px;
+  border-radius: 50%; border: 2px solid var(--accent);
+  background: rgba(255,107,53,0.1);
+  color: var(--accent); font-size: 22px;
+  cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.play-btn:hover { background: var(--accent); color: #fff; }
+
+/* Expansion */
+.expansion-base {
+  font-size: 18px; font-weight: 700;
+  padding: 16px; background: var(--surface2);
+  border-radius: 12px; text-align: center;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--accent);
+}
+.expansion-list { list-style: none; }
+.expansion-list li {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 12px; align-items: baseline;
+}
+.expansion-list li:last-child { border-bottom: none; }
+.expansion-connector {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  color: var(--accent); min-width: 100px;
+}
+.expansion-sentence { font-size: 14px; line-height: 1.6; }
+.expansion-input {
+  width: 100%; padding: 12px 16px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  font-size: 14px; font-family: inherit;
+  margin-top: 12px;
+}
+.expansion-input:focus { outline: none; border-color: var(--accent); }
+
+/* Collocation */
+.collocation-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (max-width: 600px) { .collocation-grid { grid-template-columns: 1fr; } }
+.collocation-item {
+  padding: 16px; border-radius: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+.collocation-verb {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700; color: var(--accent);
+  margin-bottom: 8px; font-size: 15px;
+}
+.collocation-examples {
+  font-size: 13px; color: var(--text-dim); line-height: 1.8;
+}
+
+/* Tabs inside module */
+.inner-tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.inner-tab {
+  padding: 6px 14px; border-radius: 8px;
+  font-size: 13px; cursor: pointer;
+  background: none; border: none;
+  color: var(--text-dim); font-weight: 500;
+  transition: all 0.2s;
+}
+.inner-tab:hover { color: var(--text); }
+.inner-tab.active { color: var(--accent); background: rgba(255,107,53,0.1); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Espresso Timer */
+.espresso-timer {
+  text-align: center; padding: 20px;
+}
+.timer-display {
+  font-family: 'Space Mono', monospace;
+  font-size: 64px; font-weight: 700;
+  color: var(--accent);
+  margin: 16px 0;
+}
+.timer-round {
+  font-size: 14px; color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.timer-topic {
+  font-size: 16px; font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Progress */
+.progress-bar {
+  height: 4px; background: var(--surface2);
+  border-radius: 2px; overflow: hidden;
+  margin: 12px 0;
+}
+.progress-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.5s ease;
+}
+
+/* Dictation */
+.dictation-area textarea {
+  width: 100%; min-height: 100px;
+  padding: 16px; border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  font-size: 15px; font-family: inherit;
+  line-height: 1.7; resize: vertical;
+}
+.dictation-area textarea:focus { outline: none; border-color: var(--accent); }
+
+/* Method tag */
+.method-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 700;
+  background: rgba(255,209,102,0.1);
+  color: var(--accent2);
+  margin-right: 4px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .nav-tabs { display: none; }
+  .module { padding: 20px; }
+  .level-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.mobile-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(10,10,15,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 8px; z-index: 100;
+}
+@media (max-width: 640px) {
+  .mobile-nav { display: flex; justify-content: space-around; }
+  main { padding-bottom: 70px; }
+}
+.mobile-nav button {
+  background: none; border: none; color: var(--text-dim);
+  font-size: 10px; padding: 6px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.mobile-nav button.active { color: var(--accent); }
+.mobile-nav button span { font-size: 20px; }
+
+/* Hide hint */
+.hint-toggle { cursor: pointer; color: var(--text-dim); font-size: 13px; }
+.hint-toggle:hover { color: var(--text); }
+.hint-content { display: none; margin-top: 8px; font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+.hint-content.show { display: block; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">英語反射力</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('home')">首頁</button>
+    <button class="nav-tab" onclick="showSection('chunks')">語塊練習</button>
+    <button class="nav-tab" onclick="showSection('respeak')">Respeak</button>
+    <button class="nav-tab" onclick="showSection('expand')">擴句訓練</button>
+    <button class="nav-tab" onclick="showSection('espresso')">濃縮咖啡法</button>
+    <button class="nav-tab" onclick="showSection('upgrade')">語感升級</button>
+  </div>
+</nav>
+
+<div class="mobile-nav">
+  <button class="active" onclick="showSection('home')"><span>🏠</span>首頁</button>
+  <button onclick="showSection('chunks')"><span>🧩</span>語塊</button>
+  <button onclick="showSection('respeak')"><span>🔁</span>Respeak</button>
+  <button onclick="showSection('expand')"><span>📝</span>擴句</button>
+  <button onclick="showSection('espresso')"><span>☕</span>濃縮</button>
+  <button onclick="showSection('upgrade')"><span>⬆️</span>升級</button>
+</div>
+
+<main>
+
+<!-- ===== HOME ===== -->
+<section class="section active" id="sec-home">
+  <div class="hero">
+    <h1>從 A1 到 C1 的<br><span>英語口說學習路徑</span></h1>
+    <p>基於語塊學習法，結合 Respeak、擴句、濃縮咖啡法等訓練方式，系統化提升你的英文口說反射力。</p>
+  </div>
+
+  <div class="level-grid">
+    <div class="level-card" data-level="a1" onclick="showSection('chunks')">
+      <div class="badge">A1</div>
+      <div class="title">起步與語感建立</div>
+      <div class="sub">理解語塊概念<br>擺脫噪音感</div>
+    </div>
+    <div class="level-card" data-level="a2" onclick="showSection('chunks')">
+      <div class="badge">A2</div>
+      <div class="title">愉快的建構期</div>
+      <div class="sub">累積搭配詞<br>口腔肌肉記憶</div>
+    </div>
+    <div class="level-card" data-level="b1" onclick="showSection('expand')">
+      <div class="badge">B1</div>
+      <div class="title">語言整合期</div>
+      <div class="sub">擴句練習<br>清晰表達想法</div>
+    </div>
+    <div class="level-card" data-level="b2" onclick="showSection('upgrade')">
+      <div class="badge">B2</div>
+      <div class="title">表達自動化</div>
+      <div class="sub">流暢度＋正確性<br>用字多元性</div>
+    </div>
+    <div class="level-card" data-level="c1" onclick="showSection('upgrade')">
+      <div class="badge">C1</div>
+      <div class="title">語感精修期</div>
+      <div class="sub">Right word<br>Right place</div>
+    </div>
+    <div class="level-card" data-level="c2" onclick="showSection('upgrade')">
+      <div class="badge">C2</div>
+      <div class="title">風格內化期</div>
+      <div class="sub">建立個人<br>語言風格</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="module" style="margin-top:40px;">
+      <div class="module-header">
+        <div class="module-icon" style="background:rgba(255,107,53,0.1);color:var(--accent);">📋</div>
+        <div class="module-title">學習方法總覽</div>
+      </div>
+      <div class="module-desc">本教材整合以下核心學習法，每種方法對應不同程度的口說需求：</div>
+      <div class="scenario-grid">
+        <div class="scenario-card" onclick="showSection('chunks')">
+          <div class="emoji">🧩</div>
+          <div class="name">切句子 + 語塊辨識</div>
+          <div class="desc">A1~A2｜把一長串聲音切分為有意義的語塊單位，建立語言記憶點。</div>
+        </div>
+        <div class="scenario-card" onclick="showSection('respeak')">
+          <div class="emoji">🔁</div>
+          <div class="name">Respeak 法</div>
+          <div class="desc">A1~C1｜跟述練習，建立口腔肌肉記憶，同時提升聽力與字彙量。</div>
+        </div>
+        <div class="scenario-card" onclick="showSection('expand')">
+          <div class="emoji">📝</div>
+          <div class="name">擴句練習 + 轉場法</div>
+          <div class="desc">B1｜用連接詞將短句擴充為完整表達，整合被動知識為主動輸出。</div>
+        </div>
+        <div class="scenario-card" onclick="showSection('espresso')">
+          <div class="emoji">☕</div>
+          <div class="name">濃縮咖啡法 (Espresso)</div>
+          <div class="desc">B2｜同一主題講三次（60s→50s→40s），內化時態與搭配詞正確性。</div>
+        </div>
+        <div class="scenario-card" onclick="showSection('chunks')">
+          <div class="emoji">🌭</div>
+          <div class="name">大腸包小腸法</div>
+          <div class="desc">A2~B1｜用句型框架包裹語塊，快速組裝出道地的句子。</div>
+        </div>
+        <div class="scenario-card" onclick="showSection('upgrade')">
+          <div class="emoji">🔬</div>
+          <div class="name">語感精修 + 漸進式</div>
+          <div class="desc">B2~C1｜從 B1 說法升級到母語人士的自然表達，Right word, right place。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CHUNKS ===== -->
+<section class="section" id="sec-chunks">
+  <div class="content-area">
+    <div class="module">
+      <div class="module-header">
+        <div class="module-icon" style="background:rgba(78,205,196,0.1);color:var(--a1);">🧩</div>
+        <div class="module-title">語塊辨識與切句練習</div>
+      </div>
+      <div class="module-desc">
+        英文句子是一群<strong>語塊 (Chunks)</strong> 的組合，不是逐字拼湊。先學會辨識語塊，才能擺脫「一串噪音」的感覺。
+      </div>
+
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchTab(this,'chunk-tab','chunk-identify')">語塊辨識</button>
+        <button class="inner-tab" onclick="switchTab(this,'chunk-tab','chunk-collocation')">搭配詞</button>
+        <button class="inner-tab" onclick="switchTab(this,'chunk-tab','chunk-sausage')">大腸包小腸</button>
+        <button class="inner-tab" onclick="switchTab(this,'chunk-tab','chunk-scenarios')">情境語塊</button>
+      </div>
+
+      <!-- Tab: 語塊辨識 -->
+      <div class="tab-content chunk-tab active" id="chunk-identify">
+        <div class="exercise-box">
+          <div class="exercise-label">練習 — 切句子</div>
+          <div class="exercise-prompt">
+            把下面的句子切分為語塊單位，點選你認為是「一組」的字：
+          </div>
+          <div id="chunk-exercise-1" class="chunk-practice"></div>
+          <div id="chunk-answer-1" class="answer-slots"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-primary btn-sm" onclick="checkChunks(1)">檢查答案</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetChunks(1)">重置</button>
+            <button class="btn btn-secondary btn-sm" onclick="nextChunkExercise()">下一題 →</button>
+          </div>
+          <div id="chunk-feedback-1" class="feedback"></div>
+        </div>
+      </div>
+
+      <!-- Tab: 搭配詞 -->
+      <div class="tab-content chunk-tab" id="chunk-collocation">
+        <div class="module-desc">搭配詞 (Collocation) 是母語人士大腦中儲存的語塊組合。例如 Beat 這個動詞可以搭配：</div>
+        <div class="collocation-grid">
+          <div class="collocation-item">
+            <div class="collocation-verb">BEAT + ___</div>
+            <div class="collocation-examples">
+              🥁 beat the drum — 打鼓<br>
+              🥚 beat the egg — 把蛋攪勻<br>
+              🚗 beat the traffic — 避開車潮<br>
+              ⚙️ beat the system — 鑽系統漏洞
+            </div>
+          </div>
+          <div class="collocation-item">
+            <div class="collocation-verb">TAKE + ___</div>
+            <div class="collocation-examples">
+              ☕ take a break — 休息一下<br>
+              ✈️ take a trip — 去旅行<br>
+              📸 take a photo — 拍照<br>
+              🤔 take a chance — 冒險試試
+            </div>
+          </div>
+          <div class="collocation-item">
+            <div class="collocation-verb">MAKE + ___</div>
+            <div class="collocation-examples">
+              🔄 make a comeback — 逆轉勝<br>
+              🎯 make a decision — 做決定<br>
+              🤝 make a deal — 達成協議<br>
+              😊 make a difference — 產生影響
+            </div>
+          </div>
+          <div class="collocation-item">
+            <div class="collocation-verb">HAVE + ___</div>
+            <div class="collocation-examples">
+              😴 have some rest — 休息一下<br>
+              🍵 have some tea — 喝茶<br>
+              💬 have a conversation — 聊一聊<br>
+              🎉 have a good time — 玩得開心
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-box" style="margin-top:20px;">
+          <div class="exercise-label">練習 — 搭配詞配對</div>
+          <div class="exercise-prompt" id="collocation-q">選出正確的搭配詞：</div>
+          <div id="collocation-options" class="chunk-practice"></div>
+          <div id="collocation-feedback" class="feedback"></div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="nextCollocation()">下一題 →</button>
+        </div>
+      </div>
+
+      <!-- Tab: 大腸包小腸 -->
+      <div class="tab-content chunk-tab" id="chunk-sausage">
+        <div class="module-desc">
+          <span class="method-tag">🌭 大腸包小腸法</span>
+          用句型框架（大腸）包裹語塊（小腸），快速組裝出自然的英文句子。
+        </div>
+        <div class="exercise-box">
+          <div class="exercise-label">句型框架 + 語塊 = 完整句子</div>
+          <div style="margin-bottom:16px;">
+            <div style="margin-bottom:12px;">
+              <span class="chunk chunk-frame">Do you happen to know</span> + <span class="chunk chunk-noun">where the restroom is</span>
+              <div style="font-size:13px;color:var(--text-dim);margin-top:4px;">→ 請問你知道廁所在哪裡嗎？</div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <span class="chunk chunk-frame">I was wondering</span> + <span class="chunk chunk-noun">if you could help me</span>
+              <div style="font-size:13px;color:var(--text-dim);margin-top:4px;">→ 我在想你是否能幫我</div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <span class="chunk chunk-frame">Would you like to</span> + <span class="chunk chunk-verb">grab a quick bite</span>
+              <div style="font-size:13px;color:var(--text-dim);margin-top:4px;">→ 你要不要快速吃個東西？</div>
+            </div>
+          </div>
+          <div class="exercise-prompt">你的回合 — 用框架造句：</div>
+          <div style="padding:12px;background:var(--surface);border-radius:10px;margin-bottom:12px;">
+            框架：<span class="chunk chunk-frame">I'm a big fan of</span> + ？
+          </div>
+          <input class="expansion-input" id="sausage-input" placeholder="輸入你的句子，例如：I'm a big fan of night markets" />
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="btn btn-primary btn-sm" onclick="checkSausage()">送出</button>
+            <span class="hint-toggle" onclick="toggleHint('sausage-hint')">💡 看範例</span>
+          </div>
+          <div class="hint-content" id="sausage-hint">
+            I'm a big fan of bubble tea. / I'm a big fan of hiking. / I'm a big fan of this podcast.
+          </div>
+          <div id="sausage-feedback" class="feedback"></div>
+        </div>
+
+        <div class="exercise-box" style="margin-top:16px;">
+          <div class="exercise-label">更多常用句型框架</div>
+          <div style="display:grid;gap:8px;">
+            <div style="padding:10px 14px;background:var(--surface);border-radius:8px;font-size:14px;">
+              <span class="chunk chunk-frame">One reason why I ___ is that...</span>
+              <span style="color:var(--text-dim);font-size:12px;margin-left:8px;">我___的原因是...</span>
+            </div>
+            <div style="padding:10px 14px;background:var(--surface);border-radius:8px;font-size:14px;">
+              <span class="chunk chunk-frame">It's + adj + to + V...</span>
+              <span style="color:var(--text-dim);font-size:12px;margin-left:8px;">做...是...的</span>
+            </div>
+            <div style="padding:10px 14px;background:var(--surface);border-radius:8px;font-size:14px;">
+              <span class="chunk chunk-frame">I've always wanted to...</span>
+              <span style="color:var(--text-dim);font-size:12px;margin-left:8px;">我一直很想...</span>
+            </div>
+            <div style="padding:10px 14px;background:var(--surface);border-radius:8px;font-size:14px;">
+              <span class="chunk chunk-frame">The thing I like most about ___ is...</span>
+              <span style="color:var(--text-dim);font-size:12px;margin-left:8px;">我最喜歡___的地方是...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: 情境語塊 -->
+      <div class="tab-content chunk-tab" id="chunk-scenarios">
+        <div class="module-desc">從你的日常、身邊的人、你的愛好出發（Me, Myself & I 原則），以下是常見情境的核心語塊：</div>
+        <div class="scenario-grid">
+          <div class="scenario-card" onclick="loadScenario('nightmarket')">
+            <div class="emoji">🏮</div>
+            <div class="name">逛夜市</div>
+            <div class="desc">food stalls, grab a quick bite, packed with people, lively atmosphere</div>
+          </div>
+          <div class="scenario-card" onclick="loadScenario('tennis')">
+            <div class="emoji">🎾</div>
+            <div class="name">看網球</div>
+            <div class="desc">make a comeback, score a service break, intense game, tough draw</div>
+          </div>
+          <div class="scenario-card" onclick="loadScenario('commute')">
+            <div class="emoji">🚇</div>
+            <div class="name">通勤日常</div>
+            <div class="desc">beat the traffic, leave early, a longer commute, rush hour</div>
+          </div>
+          <div class="scenario-card" onclick="loadScenario('work')">
+            <div class="emoji">💼</div>
+            <div class="name">加班工作</div>
+            <div class="desc">work late, wrap up, got no choice, tight deadline</div>
+          </div>
+          <div class="scenario-card" onclick="loadScenario('coffee')">
+            <div class="emoji">☕</div>
+            <div class="name">咖啡文化</div>
+            <div class="desc">pour-over, single origin, light roast, flavor notes</div>
+          </div>
+          <div class="scenario-card" onclick="loadScenario('travel')">
+            <div class="emoji">✈️</div>
+            <div class="name">旅行體驗</div>
+            <div class="desc">check in, go through customs, jet lag, travel light</div>
+          </div>
+        </div>
+        <div id="scenario-detail" style="margin-top:20px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RESPEAK ===== -->
+<section class="section" id="sec-respeak">
+  <div class="content-area">
+    <div class="module">
+      <div class="module-header">
+        <div class="module-icon" style="background:rgba(69,183,209,0.1);color:var(--a2);">🔁</div>
+        <div class="module-title">Respeak 跟述練習</div>
+      </div>
+      <div class="module-desc">
+        <span class="method-tag">🔁 Respeak 法</span>
+        聽一句、跟一句，建立口腔肌肉記憶。先不用理解文法，讓你的嘴巴「記住」這些句子的節奏和重音。用 TTS 播放後，暫停並大聲跟讀。
+      </div>
+
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchTab(this,'respeak-tab','respeak-perfect')">完成式句型</button>
+        <button class="inner-tab" onclick="switchTab(this,'respeak-tab','respeak-daily')">日常短句</button>
+        <button class="inner-tab" onclick="switchTab(this,'respeak-tab','respeak-scenario')">情境會話</button>
+      </div>
+
+      <div class="tab-content respeak-tab active" id="respeak-perfect">
+        <div id="respeak-container" class="respeak-area"></div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="prevRespeak()">← 上一句</button>
+          <button class="btn btn-primary btn-sm" onclick="speakCurrent()">🔊 播放</button>
+          <button class="btn btn-secondary btn-sm" onclick="nextRespeak()">下一句 →</button>
+        </div>
+        <div class="progress-bar" style="margin-top:16px;">
+          <div class="progress-fill" id="respeak-progress" style="width:14%"></div>
+        </div>
+      </div>
+
+      <div class="tab-content respeak-tab" id="respeak-daily">
+        <div id="respeak-daily-container" class="respeak-area"></div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="prevRespeakDaily()">← 上一句</button>
+          <button class="btn btn-primary btn-sm" onclick="speakCurrentDaily()">🔊 播放</button>
+          <button class="btn btn-secondary btn-sm" onclick="nextRespeakDaily()">下一句 →</button>
+        </div>
+      </div>
+
+      <div class="tab-content respeak-tab" id="respeak-scenario">
+        <div class="module-desc">選擇一個情境，練習該情境下的 Respeak：</div>
+        <div class="scenario-grid">
+          <div class="scenario-card" onclick="loadRespeakScenario('ordering')">
+            <div class="emoji">🍜</div>
+            <div class="name">點餐</div>
+            <div class="desc">在餐廳或小吃攤點餐的常用句</div>
+          </div>
+          <div class="scenario-card" onclick="loadRespeakScenario('shopping')">
+            <div class="emoji">🛍️</div>
+            <div class="name">購物</div>
+            <div class="desc">逛街、詢價、殺價的實用句型</div>
+          </div>
+          <div class="scenario-card" onclick="loadRespeakScenario('meeting')">
+            <div class="emoji">🤝</div>
+            <div class="name">會議開場</div>
+            <div class="desc">職場會議中常用的開場與回應</div>
+          </div>
+          <div class="scenario-card" onclick="loadRespeakScenario('smalltalk')">
+            <div class="emoji">💬</div>
+            <div class="name">閒聊寒暄</div>
+            <div class="desc">與同事或新朋友閒聊的自然表達</div>
+          </div>
+        </div>
+        <div id="respeak-scenario-detail" style="margin-top:16px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== EXPAND ===== -->
+<section class="section" id="sec-expand">
+  <div class="content-area">
+    <div class="module">
+      <div class="module-header">
+        <div class="module-icon" style="background:rgba(108,92,231,0.1);color:var(--b1);">📝</div>
+        <div class="module-title">擴句訓練 + 轉場法</div>
+      </div>
+      <div class="module-desc">
+        <span class="method-tag">📝 擴句練習</span>
+        <span class="method-tag">🔗 轉場法</span>
+        B1 的核心任務：把簡短的句子用連接詞擴充為完整的想法表達。不是只講出句子，而是清晰地「口表我心」。
+      </div>
+
+      <div id="expansion-exercises"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ESPRESSO ===== -->
+<section class="section" id="sec-espresso">
+  <div class="content-area">
+    <div class="module">
+      <div class="module-header">
+        <div class="module-icon" style="background:rgba(168,85,247,0.1);color:var(--b2);">☕</div>
+        <div class="module-title">濃縮咖啡法 (Espresso Method)</div>
+      </div>
+      <div class="module-desc">
+        <span class="method-tag">☕ Espresso</span>
+        同一個主題講三次，時間遞減：60 秒 → 50 秒 → 40 秒。透過反覆壓縮，內化文法正確性（時態、單複數）與流暢度。
+      </div>
+
+      <div class="exercise-box">
+        <div class="exercise-label">選擇一個主題開始練習</div>
+        <div class="scenario-grid" style="margin-top:8px;">
+          <div class="scenario-card" onclick="startEspresso('介紹你最喜歡的夜市','Describe your favorite night market')">
+            <div class="emoji">🏮</div>
+            <div class="name">我最愛的夜市</div>
+          </div>
+          <div class="scenario-card" onclick="startEspresso('描述你的日常通勤','Describe your daily commute')">
+            <div class="emoji">🚇</div>
+            <div class="name">我的通勤日常</div>
+          </div>
+          <div class="scenario-card" onclick="startEspresso('說明你為什麼搬家','Explain why you moved')">
+            <div class="emoji">🏠</div>
+            <div class="name">我搬家的原因</div>
+          </div>
+          <div class="scenario-card" onclick="startEspresso('分享你的週末計畫','Share your weekend plans')">
+            <div class="emoji">🌴</div>
+            <div class="name">我的週末計畫</div>
+          </div>
+          <div class="scenario-card" onclick="startEspresso('描述你的工作','Describe your job')">
+            <div class="emoji">💼</div>
+            <div class="name">我的工作內容</div>
+          </div>
+          <div class="scenario-card" onclick="startEspresso('介紹你的興趣','Talk about your hobbies')">
+            <div class="emoji">🎯</div>
+            <div class="name">我的興趣愛好</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="espresso-active" style="display:none;" class="exercise-box">
+        <div class="espresso-timer">
+          <div class="timer-round" id="espresso-round">第 1 輪 / 3</div>
+          <div class="timer-topic" id="espresso-topic"></div>
+          <div class="timer-display" id="espresso-time">60</div>
+          <div style="display:flex;gap:8px;justify-content:center;">
+            <button class="btn btn-primary" id="espresso-start-btn" onclick="toggleEspresso()">▶ 開始</button>
+            <button class="btn btn-secondary" onclick="resetEspresso()">重置</button>
+          </div>
+          <div style="margin-top:16px;font-size:13px;color:var(--text-dim);">
+            💡 提示：每一輪結束後，思考哪些地方可以說得更精準、更流暢，然後在下一輪改善。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== UPGRADE ===== -->
+<section class="section" id="sec-upgrade">
+  <div class="content-area">
+    <div class="module">
+      <div class="module-header">
+        <div class="module-icon" style="background:rgba(244,114,182,0.1);color:var(--c1);">⬆️</div>
+        <div class="module-title">語感升級 — 從 B1 到 C1</div>
+      </div>
+      <div class="module-desc">
+        <span class="method-tag">🔬 漸進式學習法</span>
+        Right word, right place — 不只是講得出來，而是講到位。比較 B1 的說法和 C1 的自然表達，培養語感。
+      </div>
+
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchTab(this,'upgrade-tab','upgrade-compare')">B1 → C1 對比</button>
+        <button class="inner-tab" onclick="switchTab(this,'upgrade-tab','upgrade-lexical')">用字多元性</button>
+        <button class="inner-tab" onclick="switchTab(this,'upgrade-tab','upgrade-dictation')">聽寫精修</button>
+      </div>
+
+      <div class="tab-content upgrade-tab active" id="upgrade-compare">
+        <div id="upgrade-pairs"></div>
+      </div>
+
+      <div class="tab-content upgrade-tab" id="upgrade-lexical">
+        <div class="module-desc">不要永遠只用同一個字。以下是常見概念的多元表達方式：</div>
+        <div id="lexical-cards"></div>
+      </div>
+
+      <div class="tab-content upgrade-tab" id="upgrade-dictation">
+        <div class="module-desc">
+          <span class="method-tag">✍️ 聽寫練習</span>
+          播放一段母語人士的自然口語，寫下你聽到的內容。注意斷句位置和語塊邊界。
+        </div>
+        <div class="exercise-box">
+          <div class="exercise-label">聽寫練習</div>
+          <div class="exercise-prompt" id="dictation-prompt">點擊播放，聽完後在下方寫出你聽到的句子。</div>
+          <button class="btn btn-primary btn-sm" onclick="playDictation()" style="margin-bottom:12px;">🔊 播放句子</button>
+          <div class="dictation-area">
+            <textarea id="dictation-input" placeholder="在這裡寫下你聽到的內容..."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="btn btn-primary btn-sm" onclick="checkDictation()">對答案</button>
+            <button class="btn btn-secondary btn-sm" onclick="nextDictation()">下一題 →</button>
+          </div>
+          <div id="dictation-feedback" class="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ===== NAVIGATION =====
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.mobile-nav button').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => { if(t.textContent.includes(getTabName(id))) t.classList.add('active'); });
+  document.querySelectorAll('.mobile-nav button').forEach(t => { if(t.textContent.includes(getMobileTabName(id))) t.classList.add('active'); });
+  window.scrollTo(0,0);
+}
+function getTabName(id) { return {home:'首頁',chunks:'語塊',respeak:'Respeak',expand:'擴句',espresso:'濃縮',upgrade:'語感'}[id]||''; }
+function getMobileTabName(id) { return {home:'首頁',chunks:'語塊',respeak:'Respeak',expand:'擴句',espresso:'濃縮',upgrade:'升級'}[id]||''; }
+
+function switchTab(el, tabClass, tabId) {
+  el.parentElement.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.' + tabClass).forEach(t => t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('show');
+}
+
+// ===== TTS =====
+function speak(text, rate=0.9) {
+  if('speechSynthesis' in window) {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = rate; u.pitch = 1;
+    speechSynthesis.speak(u);
+  }
+}
+
+// ===== CHUNK EXERCISES =====
+const chunkExercises = [
+  { sentence: "When the deadline gets closer I try to focus on one task at a time",
+    chunks: [["When","the","deadline","gets","closer"],["I","try","to"],["focus","on"],["one","task"],["at","a","time"]] },
+  { sentence: "I have been to Tokyo many times and I always enjoy the food there",
+    chunks: [["I","have","been","to"],["Tokyo"],["many","times"],["and","I","always"],["enjoy","the","food"],["there"]] },
+  { sentence: "Do you happen to know where the nearest convenience store is",
+    chunks: [["Do","you","happen","to","know"],["where"],["the","nearest"],["convenience","store"],["is"]] },
+  { sentence: "One reason why I enjoy night markets is that the food is cheap and filling",
+    chunks: [["One","reason","why"],["I","enjoy"],["night","markets"],["is","that"],["the","food","is"],["cheap","and","filling"]] },
+  { sentence: "I moved to Taoyuan because the rent in Taipei was too high",
+    chunks: [["I","moved","to"],["Taoyuan"],["because"],["the","rent"],["in","Taipei"],["was","too","high"]] },
+];
+let currentChunkEx = 0;
+let selectedWords = [];
+
+function renderChunkExercise(idx) {
+  const ex = chunkExercises[idx];
+  const words = ex.sentence.split(' ');
+  const container = document.getElementById('chunk-exercise-1');
+  const answerArea = document.getElementById('chunk-answer-1');
+  container.innerHTML = '';
+  answerArea.innerHTML = '';
+  selectedWords = [];
+  document.getElementById('chunk-feedback-1').className = 'feedback';
+  document.getElementById('chunk-feedback-1').textContent = '';
+
+  words.forEach((w, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'chunk-pill';
+    pill.textContent = w;
+    pill.onclick = () => {
+      if(pill.classList.contains('selected')) {
+        pill.classList.remove('selected');
+        selectedWords = selectedWords.filter(x => x !== i);
+      } else {
+        pill.classList.add('selected');
+        selectedWords.push(i);
+      }
+      updateAnswerSlots(words);
+    };
+    container.appendChild(pill);
+  });
+}
+
+function updateAnswerSlots(words) {
+  const area = document.getElementById('chunk-answer-1');
+  if(selectedWords.length === 0) { area.innerHTML = '<span style="color:var(--text-dim);font-size:13px;">點選上方的字組成語塊</span>'; return; }
+  const sorted = [...selectedWords].sort((a,b)=>a-b);
+  const group = sorted.map(i => words[i]).join(' ');
+  area.innerHTML = `<span class="answer-slot">${group}</span>`;
+}
+
+function checkChunks(n) {
+  const ex = chunkExercises[currentChunkEx];
+  const fb = document.getElementById('chunk-feedback-1');
+  const sorted = [...selectedWords].sort((a,b)=>a-b);
+  const words = ex.sentence.split(' ');
+  const userGroup = sorted.map(i => words[i]).join(' ');
+
+  let found = false;
+  for(const chunk of ex.chunks) {
+    if(chunk.join(' ') === userGroup) { found = true; break; }
+  }
+
+  if(found) {
+    fb.className = 'feedback success show';
+    fb.textContent = '✅ 正確！「' + userGroup + '」是一個語塊。試試找出其他語塊吧！';
+  } else {
+    fb.className = 'feedback info show';
+    const allChunks = ex.chunks.map(c => '「' + c.join(' ') + '」').join('、');
+    fb.textContent = '💡 這個組合不太像常見語塊。這句的語塊參考：' + allChunks;
+  }
+}
+
+function resetChunks(n) {
+  renderChunkExercise(currentChunkEx);
+}
+
+function nextChunkExercise() {
+  currentChunkEx = (currentChunkEx + 1) % chunkExercises.length;
+  renderChunkExercise(currentChunkEx);
+}
+
+// ===== COLLOCATION =====
+const collocations = [
+  { q: '___ the egg（把蛋攪勻）', options: ['Beat','Hit','Break','Crack'], answer: 0 },
+  { q: '___ the traffic（避開車潮）', options: ['Avoid','Beat','Run','Pass'], answer: 1 },
+  { q: '___ a comeback（逆轉勝）', options: ['Do','Take','Make','Get'], answer: 2 },
+  { q: '___ a break（休息一下）', options: ['Have','Make','Take','Do'], answer: 2 },
+  { q: '___ some rest（休息一下）', options: ['Take','Have','Get','Do'], answer: 1 },
+  { q: '___ a quick bite（快速吃點東西）', options: ['Take','Have','Grab','Get'], answer: 2 },
+  { q: '___ the system（鑽系統漏洞）', options: ['Crack','Beat','Break','Hack'], answer: 1 },
+  { q: '___ a trip（去旅行）', options: ['Make','Do','Have','Take'], answer: 3 },
+];
+let currentColl = 0;
+
+function renderCollocation() {
+  const c = collocations[currentColl];
+  document.getElementById('collocation-q').textContent = c.q;
+  const container = document.getElementById('collocation-options');
+  container.innerHTML = '';
+  document.getElementById('collocation-feedback').className = 'feedback';
+  c.options.forEach((opt, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'chunk-pill';
+    pill.textContent = opt;
+    pill.onclick = () => {
+      container.querySelectorAll('.chunk-pill').forEach(p => p.classList.remove('selected','correct','wrong'));
+      if(i === c.answer) {
+        pill.classList.add('correct');
+        const fb = document.getElementById('collocation-feedback');
+        fb.className = 'feedback success show';
+        fb.textContent = '✅ 正確！' + opt + ' ' + c.q.replace('___','').trim();
+      } else {
+        pill.classList.add('wrong');
+        const fb = document.getElementById('collocation-feedback');
+        fb.className = 'feedback error show';
+        fb.textContent = '❌ 不太對，正確答案是 ' + c.options[c.answer];
+      }
+    };
+    container.appendChild(pill);
+  });
+}
+
+function nextCollocation() {
+  currentColl = (currentColl + 1) % collocations.length;
+  renderCollocation();
+}
+
+// ===== SAUSAGE =====
+function checkSausage() {
+  const val = document.getElementById('sausage-input').value.trim();
+  const fb = document.getElementById('sausage-feedback');
+  if(!val) { fb.className='feedback error show'; fb.textContent='請輸入句子'; return; }
+  if(val.toLowerCase().includes("i'm a big fan of") || val.toLowerCase().includes("im a big fan of") || val.toLowerCase().includes("i am a big fan of")) {
+    fb.className='feedback success show';
+    fb.textContent='✅ 很棒！你成功用框架造出了句子。試試其他框架吧！';
+  } else {
+    fb.className='feedback info show';
+    fb.textContent='💡 記得用「I\'m a big fan of + 名詞」這個框架喔！';
+  }
+}
+
+// ===== SCENARIOS =====
+const scenarios = {
+  nightmarket: {
+    title: '🏮 逛夜市', chunks: [
+      { en: 'food stalls', zh: '小吃攤', ex: 'There are dozens of food stalls in the night market.' },
+      { en: 'grab a quick bite', zh: '快速吃點東西', ex: "Let's grab a quick bite before the movie." },
+      { en: 'packed with people', zh: '擠滿了人', ex: 'The night market is packed with people on weekends.' },
+      { en: 'lively atmosphere', zh: '熱鬧的氣氛', ex: 'I love the lively atmosphere of night markets.' },
+      { en: 'eat as you walk', zh: '邊走邊吃', ex: 'You can eat as you walk through the market.' },
+      { en: 'try a little bit of everything', zh: '每種都試試', ex: 'We can try a little bit of everything tonight.' },
+    ]},
+  tennis: {
+    title: '🎾 看網球', chunks: [
+      { en: 'make a comeback', zh: '逆轉勝', ex: 'She made an incredible comeback in the third set.' },
+      { en: 'score a service break', zh: '破發', ex: 'He scored a service break early in the match.' },
+      { en: 'an intense game', zh: '一場激烈的比賽', ex: "It was an intense game that went to five sets." },
+      { en: 'have a tough draw', zh: '籤運不好', ex: 'She had a tough draw and faced the top seed in round two.' },
+    ]},
+  commute: {
+    title: '🚇 通勤日常', chunks: [
+      { en: 'beat the traffic', zh: '避開車潮', ex: 'I left early to beat the traffic.' },
+      { en: 'a longer commute', zh: '更長的通勤', ex: 'Moving there means adjusting to a longer commute.' },
+      { en: 'rush hour', zh: '尖峰時段', ex: "Rush hour traffic in Taipei is no joke." },
+      { en: 'leave early', zh: '提早離開', ex: "I'll leave early to beat the traffic." },
+    ]},
+  work: {
+    title: '💼 加班工作', chunks: [
+      { en: 'work late', zh: '加班', ex: "I'll probably be working late tonight." },
+      { en: 'wrap up', zh: '結束、收尾', ex: 'There are a few things I need to wrap up.' },
+      { en: 'got no choice but to', zh: '不得不', ex: "I've got no choice but to stay late." },
+      { en: 'tight deadline', zh: '緊迫的截止日', ex: "We're working against a tight deadline." },
+      { en: 'a few things to finish', zh: '還有幾件事要完成', ex: 'I have a few things to finish before I leave.' },
+    ]},
+  coffee: {
+    title: '☕ 咖啡文化', chunks: [
+      { en: 'pour-over coffee', zh: '手沖咖啡', ex: "I prefer pour-over coffee to espresso." },
+      { en: 'single origin', zh: '單品咖啡', ex: 'This is a single origin from Ethiopia.' },
+      { en: 'light roast', zh: '淺焙', ex: 'Light roast brings out the fruity notes.' },
+      { en: 'flavor notes', zh: '風味描述', ex: 'The flavor notes include chocolate and citrus.' },
+    ]},
+  travel: {
+    title: '✈️ 旅行體驗', chunks: [
+      { en: 'check in', zh: '辦理登機/入住', ex: 'We need to check in at least two hours early.' },
+      { en: 'go through customs', zh: '過海關', ex: 'Going through customs took forever.' },
+      { en: 'jet lag', zh: '時差', ex: 'I always get terrible jet lag flying to Europe.' },
+      { en: 'travel light', zh: '輕裝旅行', ex: 'I prefer to travel light with just a backpack.' },
+    ]},
+};
+
+function loadScenario(key) {
+  const s = scenarios[key];
+  let html = `<div class="exercise-box"><div class="exercise-label">${s.title} — 核心語塊</div>`;
+  s.chunks.forEach(c => {
+    html += `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:12px;">
+      <div style="min-width:180px;"><span class="chunk chunk-verb">${c.en}</span> <span style="color:var(--text-dim);font-size:12px;">${c.zh}</span></div>
+      <div style="font-size:14px;color:var(--text-dim);cursor:pointer;" onclick="speak('${c.ex.replace(/'/g,"\\'")}')">🔊 ${c.ex}</div>
+    </div>`;
+  });
+  html += `<button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="speak('${s.chunks.map(c=>c.ex).join('. ').replace(/'/g,"\\'")}', 0.85)">🔊 全部播放</button></div>`;
+  document.getElementById('scenario-detail').innerHTML = html;
+}
+
+// ===== RESPEAK =====
+const respeakSentences = [
+  { en: "I've been to Tokyo many times.", zh: '我去過東京很多次。', chunks: ["I've","been to","Tokyo","many times"] },
+  { en: "I've never seen that.", zh: '我從來沒有看過那個。', chunks: ["I've","never","seen that"] },
+  { en: "I've never been there.", zh: '我從來沒有去過那裡。', chunks: ["I've","never","been there"] },
+  { en: "I've finished.", zh: '我完成了。', chunks: ["I've","finished"] },
+  { en: "I've sent an email.", zh: '我寄了一封信。', chunks: ["I've","sent","an email"] },
+  { en: "It's been a long day.", zh: '今天好漫長。', chunks: ["It's been","a long day"] },
+  { en: "Have you arrived?", zh: '你到了嗎？', chunks: ["Have you","arrived"] },
+];
+let respeakIdx = 0;
+
+function renderRespeak() {
+  const s = respeakSentences[respeakIdx];
+  const container = document.getElementById('respeak-container');
+  container.innerHTML = `
+    <div class="respeak-sentence">${s.en}</div>
+    <div class="respeak-translation">${s.zh}</div>
+    <div class="respeak-chunks">${s.chunks.map(c => `<span class="respeak-chunk">${c}</span>`).join('')}</div>
+    <button class="play-btn" onclick="speak('${s.en.replace(/'/g,"\\'")}', 0.85)">🔊</button>
+  `;
+  document.getElementById('respeak-progress').style.width = ((respeakIdx+1)/respeakSentences.length*100)+'%';
+}
+function speakCurrent() { speak(respeakSentences[respeakIdx].en, 0.85); }
+function nextRespeak() { respeakIdx = (respeakIdx+1) % respeakSentences.length; renderRespeak(); }
+function prevRespeak() { respeakIdx = (respeakIdx-1+respeakSentences.length) % respeakSentences.length; renderRespeak(); }
+
+// Daily respeak
+const dailySentences = [
+  { en: "I try to focus on one task at a time.", zh: '我嘗試一次專注一件事。', chunks: ["I try to","focus on","one task","at a time"] },
+  { en: "When the deadline gets closer, I feel more pressure.", zh: '截止日快到時，我會感到更多壓力。', chunks: ["When","the deadline","gets closer","I feel","more pressure"] },
+  { en: "I moved to Taoyuan because the rent was too high.", zh: '因為房租太高我搬去桃園了。', chunks: ["I moved to","Taoyuan","because","the rent","was too high"] },
+  { en: "I'm really into tennis these days.", zh: '我最近很迷網球。', chunks: ["I'm","really into","tennis","these days"] },
+  { en: "The night market is packed with people.", zh: '夜市裡擠滿了人。', chunks: ["The night market","is packed","with people"] },
+];
+let dailyIdx = 0;
+
+function renderRespeakDaily() {
+  const s = dailySentences[dailyIdx];
+  document.getElementById('respeak-daily-container').innerHTML = `
+    <div class="respeak-sentence">${s.en}</div>
+    <div class="respeak-translation">${s.zh}</div>
+    <div class="respeak-chunks">${s.chunks.map(c => `<span class="respeak-chunk">${c}</span>`).join('')}</div>
+    <button class="play-btn" onclick="speak('${s.en.replace(/'/g,"\\'")}', 0.85)">🔊</button>
+  `;
+}
+function speakCurrentDaily() { speak(dailySentences[dailyIdx].en, 0.85); }
+function nextRespeakDaily() { dailyIdx = (dailyIdx+1) % dailySentences.length; renderRespeakDaily(); }
+function prevRespeakDaily() { dailyIdx = (dailyIdx-1+dailySentences.length) % dailySentences.length; renderRespeakDaily(); }
+
+// Scenario respeak
+const respeakScenarios = {
+  ordering: [
+    "Can I get the fried chicken, please?",
+    "I'll have the beef noodle soup.",
+    "Could I get that to go?",
+    "Just water is fine, thanks.",
+    "Do you have anything vegetarian?",
+  ],
+  shopping: [
+    "How much is this one?",
+    "Do you have this in a different color?",
+    "Can you give me a better price?",
+    "I'm just looking, thanks.",
+    "I'll take two of these.",
+  ],
+  meeting: [
+    "Let's get started, shall we?",
+    "I'd like to go over a few things today.",
+    "Does anyone have any questions so far?",
+    "Let's move on to the next point.",
+    "I think we can wrap up here.",
+  ],
+  smalltalk: [
+    "How was your weekend?",
+    "Have you tried that new restaurant?",
+    "I've been meaning to ask you about that.",
+    "That sounds like a lot of fun.",
+    "I know what you mean.",
+  ],
+};
+
+function loadRespeakScenario(key) {
+  const sentences = respeakScenarios[key];
+  let html = '<div class="exercise-box"><div class="exercise-label">逐句 Respeak</div>';
+  sentences.forEach((s,i) => {
+    html += `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-secondary btn-sm" onclick="speak('${s.replace(/'/g,"\\'")}',0.8)" style="flex-shrink:0;">🔊</button>
+      <span style="font-size:15px;">${s}</span>
+    </div>`;
+  });
+  html += `<button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="speak('${sentences.join('. ').replace(/'/g,"\\'")}',0.8)">🔊 連續播放</button></div>`;
+  document.getElementById('respeak-scenario-detail').innerHTML = html;
+}
+
+// ===== EXPANSION =====
+const expansionExercises = [
+  { base: "I moved to Taoyuan.", connectors: [
+    { word: "because", example: "I moved to Taoyuan because the rent in Taipei was too high." },
+    { word: "even though", example: "I moved to Taoyuan even though it's farther from my office." },
+    { word: "in order to", example: "I moved to Taoyuan in order to save money." },
+    { word: "and", example: "I moved to Taoyuan and I feel less stressed now." },
+    { word: "where", example: "I moved to Taoyuan where the pace of life is slower." },
+    { word: "so", example: "I moved to Taoyuan so my living costs are lower now." },
+  ]},
+  { base: "I like night markets.", connectors: [
+    { word: "because", example: "I like night markets because the food is cheap and filling." },
+    { word: "especially", example: "I like night markets, especially the ones in Tainan." },
+    { word: "even though", example: "I like night markets even though they're always crowded." },
+    { word: "where", example: "I like night markets where you can find local snacks." },
+  ]},
+  { base: "I started learning English.", connectors: [
+    { word: "when", example: "I started learning English when I was in elementary school." },
+    { word: "because", example: "I started learning English because I wanted to travel abroad." },
+    { word: "and", example: "I started learning English and it changed my life." },
+    { word: "even though", example: "I started learning English even though I was afraid of making mistakes." },
+  ]},
+];
+
+function renderExpansion() {
+  const container = document.getElementById('expansion-exercises');
+  let html = '';
+  expansionExercises.forEach((ex, i) => {
+    html += `<div class="exercise-box" style="margin-bottom:16px;">
+      <div class="expansion-base">${ex.base}</div>
+      <div class="exercise-label">用連接詞擴句</div>
+      <ul class="expansion-list">`;
+    ex.connectors.forEach(c => {
+      html += `<li>
+        <span class="expansion-connector">${c.word}</span>
+        <span class="expansion-sentence">${c.example}</span>
+        <button class="btn btn-secondary btn-sm" style="flex-shrink:0;margin-left:auto;" onclick="speak('${c.example.replace(/'/g,"\\'")}',0.85)">🔊</button>
+      </li>`;
+    });
+    html += `</ul>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-dim);">✍️ 你的回合：</div>
+      <input class="expansion-input" placeholder="用任何連接詞擴充「${ex.base}」" />
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ===== ESPRESSO =====
+let espressoInterval = null;
+let espressoRunning = false;
+let espressoRound = 1;
+let espressoTime = 60;
+const roundTimes = [60, 50, 40];
+
+function startEspresso(topic, topicEn) {
+  document.getElementById('espresso-active').style.display = 'block';
+  document.getElementById('espresso-topic').textContent = topic;
+  espressoRound = 1; espressoTime = 60; espressoRunning = false;
+  if(espressoInterval) clearInterval(espressoInterval);
+  updateEspressoUI();
+  document.getElementById('espresso-active').scrollIntoView({behavior:'smooth'});
+}
+
+function toggleEspresso() {
+  if(espressoRunning) {
+    clearInterval(espressoInterval);
+    espressoRunning = false;
+    document.getElementById('espresso-start-btn').textContent = '▶ 繼續';
+  } else {
+    espressoRunning = true;
+    document.getElementById('espresso-start-btn').textContent = '⏸ 暫停';
+    espressoInterval = setInterval(() => {
+      espressoTime--;
+      if(espressoTime <= 0) {
+        clearInterval(espressoInterval);
+        espressoRunning = false;
+        if(espressoRound < 3) {
+          espressoRound++;
+          espressoTime = roundTimes[espressoRound-1];
+          document.getElementById('espresso-start-btn').textContent = '▶ 開始第 ' + espressoRound + ' 輪';
+        } else {
+          document.getElementById('espresso-start-btn').textContent = '🎉 完成！';
+        }
+      }
+      updateEspressoUI();
+    }, 1000);
+  }
+}
+
+function resetEspresso() {
+  if(espressoInterval) clearInterval(espressoInterval);
+  espressoRound = 1; espressoTime = 60; espressoRunning = false;
+  document.getElementById('espresso-start-btn').textContent = '▶ 開始';
+  updateEspressoUI();
+}
+
+function updateEspressoUI() {
+  document.getElementById('espresso-round').textContent = `第 ${espressoRound} 輪 / 3 — ${roundTimes[espressoRound-1]} 秒`;
+  document.getElementById('espresso-time').textContent = espressoTime;
+  const color = espressoTime <= 10 ? 'var(--error)' : espressoTime <= 20 ? 'var(--accent2)' : 'var(--accent)';
+  document.getElementById('espresso-time').style.color = color;
+}
+
+// ===== UPGRADE =====
+const upgradePairs = [
+  { b1: "Night markets are very crowded.", c1: "Night markets can get quite crowded, especially on weekends.", note: "C1 用 can get 表達「有時候會」，加上 especially 限定條件，更精準。" },
+  { b1: "This decision is really risky.", c1: "This decision could be risky depending on how it's implemented.", note: "C1 用 could be 表達可能性，depending on 增加條件判斷。" },
+  { b1: "I have to work late today.", c1: "I'll probably be working late tonight because there are a few things I need to wrap up.", note: "C1 用 probably be working 表達八成確定的語氣，wrap up 是常用語塊。" },
+  { b1: "I moved to Taoyuan because rent in Taipei was too high.", c1: "I moved to Taoyuan largely for financial reasons, though it did mean adjusting to a longer commute.", note: "C1 用 largely for financial reasons 更概括，though it did mean 帶出轉折。" },
+  { b1: "I decided to move.", c1: "I ended up moving.", note: "ended up 帶有「最後還是」的無奈語氣，比 decided 更自然。" },
+  { b1: "I must work late today.", c1: "I've got no choice but to stay late tonight.", note: "got no choice but to 表達「不得不」，比 must 更口語更精準。" },
+];
+
+function renderUpgradePairs() {
+  let html = '';
+  upgradePairs.forEach((p,i) => {
+    html += `<div class="exercise-box" style="margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--b1);margin-bottom:6px;">B1 說法</div>
+          <div style="font-size:15px;cursor:pointer;" onclick="speak('${p.b1.replace(/'/g,"\\'")}',0.85)">${p.b1} 🔊</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--c1);margin-bottom:6px;">C1 自然表達</div>
+          <div style="font-size:15px;cursor:pointer;" onclick="speak('${p.c1.replace(/'/g,"\\'")}',0.85)">${p.c1} 🔊</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:13px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:10px;">💡 ${p.note}</div>
+    </div>`;
+  });
+  document.getElementById('upgrade-pairs').innerHTML = html;
+}
+
+// Lexical range
+const lexicalCards = [
+  { concept: '很重要', basic: 'very important', alternatives: ['a key driver', 'a major factor', 'our top priority', 'it matters a lot', 'crucial', 'essential'] },
+  { concept: '解決問題', basic: 'solve the problem', alternatives: ['address the issue', 'fix the bottleneck', 'tackle the challenge', 'work through it', 'sort it out'] },
+  { concept: '討論', basic: 'talk about', alternatives: ['touch on', 'dive into', 'walk through', 'go over', 'cover', 'bring up'] },
+  { concept: '很好', basic: 'very good', alternatives: ['outstanding', 'exceptional', 'impressive', 'remarkable', 'solid', 'top-notch'] },
+];
+
+function renderLexical() {
+  let html = '';
+  lexicalCards.forEach(c => {
+    html += `<div class="exercise-box" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px;">
+        <span style="font-size:13px;color:var(--text-dim);">${c.concept}</span>
+        <span style="font-size:11px;background:rgba(239,68,68,0.1);color:var(--error);padding:2px 8px;border-radius:4px;">不要永遠用</span>
+        <span style="font-weight:700;">${c.basic}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${c.alternatives.map(a => `<span class="chunk-pill" onclick="speak('${a}',0.85)" style="cursor:pointer;">${a}</span>`).join('')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('lexical-cards').innerHTML = html;
+}
+
+// ===== DICTATION =====
+const dictationSentences = [
+  { text: "And what we tried to do, I think more than anything else, is recognize that you can't exceed the expectations of your customers unless you exceed the expectations of your people.", source: "Howard Schultz, Starbucks CEO" },
+  { text: "I'll probably be working late tonight because there are a few things I need to wrap up before the deadline.", source: "Workplace conversation" },
+  { text: "One reason why I enjoy night markets is that the food is cheap and filling, so I can try many things without spending much.", source: "Daily conversation" },
+  { text: "I moved to Taoyuan largely for financial reasons, though it did mean adjusting to a longer commute.", source: "Daily conversation" },
+];
+let dictIdx = 0;
+
+function playDictation() {
+  speak(dictationSentences[dictIdx].text, 0.8);
+  document.getElementById('dictation-prompt').textContent = '🎧 正在播放... 聽完後在下方寫出你聽到的句子。 (' + dictationSentences[dictIdx].source + ')';
+}
+
+function checkDictation() {
+  const fb = document.getElementById('dictation-feedback');
+  fb.className = 'feedback info show';
+  fb.innerHTML = `<strong>原文：</strong><br>${dictationSentences[dictIdx].text}<br><br><em>來源：${dictationSentences[dictIdx].source}</em><br><br>💡 對照你寫的內容，注意語塊邊界和斷句位置。`;
+}
+
+function nextDictation() {
+  dictIdx = (dictIdx + 1) % dictationSentences.length;
+  document.getElementById('dictation-input').value = '';
+  document.getElementById('dictation-feedback').className = 'feedback';
+  document.getElementById('dictation-prompt').textContent = '點擊播放，聽完後在下方寫出你聽到的句子。';
+}
+
+// ===== INIT =====
+renderChunkExercise(0);
+renderCollocation();
+renderRespeak();
+renderRespeakDaily();
+renderExpansion();
+renderUpgradePairs();
+renderLexical();
+</script>
+</body>
+</html>
