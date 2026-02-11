@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 學術英文寫作學習教材</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --primary-dark: #1d4ed8;
+    --accent: #f59e0b;
+    --accent-light: #fef3c7;
+    --success: #10b981;
+    --success-light: #d1fae5;
+    --danger: #ef4444;
+    --danger-light: #fee2e2;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    line-height: 1.6;
+  }
+
+  /* Navigation */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    box-shadow: var(--shadow);
+  }
+  .nav-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; align-items: center; gap: 4px;
+    padding: 8px 16px;
+    overflow-x: auto;
+  }
+  .nav-btn {
+    padding: 8px 16px; border: none; background: none;
+    font-size: 14px; font-weight: 500; color: var(--gray-500);
+    border-radius: 8px; cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+  .nav-btn.active { background: var(--primary); color: white; }
+
+  /* Main */
+  .main { max-width: 900px; margin: 0 auto; padding: 72px 16px 32px; }
+
+  /* Header */
+  .hero {
+    text-align: center; padding: 40px 20px;
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    border-radius: var(--radius); color: white; margin-bottom: 24px;
+  }
+  .hero h1 { font-size: 28px; margin-bottom: 8px; }
+  .hero p { opacity: 0.9; font-size: 16px; }
+
+  /* Progress Bar */
+  .progress-bar {
+    background: var(--gray-200); border-radius: 999px; height: 8px;
+    margin-bottom: 24px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 999px; transition: width 0.5s ease;
+  }
+  .progress-text { text-align: center; font-size: 13px; color: var(--gray-500); margin-bottom: 16px; }
+
+  /* Card */
+  .card {
+    background: white; border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 24px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 20px; margin-bottom: 16px; color: var(--gray-900); }
+  .card h3 { font-size: 17px; margin-bottom: 12px; color: var(--gray-700); }
+
+  /* Section hidden */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ===== FLASHCARD ===== */
+  .flashcard-container { perspective: 1000px; margin: 20px 0; }
+  .flashcard {
+    width: 100%; min-height: 220px; position: relative;
+    cursor: pointer; transform-style: preserve-3d;
+    transition: transform 0.6s;
+  }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .flashcard-face {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    backface-visibility: hidden; border-radius: var(--radius);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px; text-align: center;
+  }
+  .flashcard-front {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 2px solid var(--primary);
+  }
+  .flashcard-back {
+    background: linear-gradient(135deg, #f0fdf4, #d1fae5);
+    border: 2px solid var(--success);
+    transform: rotateY(180deg);
+  }
+  .flashcard-face .label { font-size: 12px; color: var(--gray-500); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .flashcard-face .term { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+  .flashcard-face .detail { font-size: 15px; color: var(--gray-700); line-height: 1.5; }
+  .flashcard-nav {
+    display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px;
+  }
+  .flashcard-nav button {
+    padding: 10px 24px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-prev, .btn-next { background: var(--primary); color: white; }
+  .btn-prev:hover, .btn-next:hover { background: var(--primary-dark); }
+  .btn-know { background: var(--success); color: white; }
+  .btn-know:hover { background: #059669; }
+  .btn-dontknow { background: var(--danger); color: white; }
+  .btn-dontknow:hover { background: #dc2626; }
+  .flashcard-counter { font-size: 14px; color: var(--gray-500); font-weight: 600; }
+  .flashcard-hint { text-align: center; font-size: 13px; color: var(--gray-500); margin-top: 8px; }
+
+  /* ===== QUIZ ===== */
+  .quiz-question { margin-bottom: 24px; }
+  .quiz-question .q-text {
+    font-size: 16px; font-weight: 600; margin-bottom: 12px;
+    padding: 16px; background: var(--gray-50); border-radius: 8px;
+    border-left: 4px solid var(--primary);
+  }
+  .quiz-question .q-text .blank {
+    display: inline-block; min-width: 120px; border-bottom: 2px dashed var(--primary);
+    margin: 0 4px; text-align: center; color: var(--primary); font-weight: 700;
+  }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn {
+    padding: 12px 16px; border: 2px solid var(--gray-200);
+    border-radius: 8px; background: white; text-align: left;
+    font-size: 15px; cursor: pointer; transition: all 0.2s;
+  }
+  .option-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+  .option-btn.correct { border-color: var(--success); background: var(--success-light); }
+  .option-btn.wrong { border-color: var(--danger); background: var(--danger-light); }
+  .option-btn.disabled { pointer-events: none; opacity: 0.7; }
+  .explanation {
+    margin-top: 12px; padding: 12px 16px; border-radius: 8px;
+    font-size: 14px; line-height: 1.6; display: none;
+  }
+  .explanation.show { display: block; }
+  .explanation.correct-exp { background: var(--success-light); border: 1px solid var(--success); }
+  .explanation.wrong-exp { background: var(--danger-light); border: 1px solid var(--danger); }
+
+  .quiz-score {
+    text-align: center; padding: 32px;
+    background: linear-gradient(135deg, var(--primary-light), #ede9fe);
+    border-radius: var(--radius); margin-top: 24px;
+  }
+  .quiz-score .score-num { font-size: 48px; font-weight: 800; color: var(--primary); }
+  .quiz-score .score-label { font-size: 16px; color: var(--gray-500); }
+  .btn-restart {
+    margin-top: 16px; padding: 10px 32px; border: none;
+    background: var(--primary); color: white; font-size: 15px;
+    font-weight: 600; border-radius: 8px; cursor: pointer;
+  }
+
+  /* ===== READING ===== */
+  .reading-nav {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+  }
+  .reading-nav button {
+    padding: 6px 14px; border: 1px solid var(--gray-300);
+    border-radius: 999px; background: white; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .reading-nav button:hover { border-color: var(--primary); color: var(--primary); }
+  .reading-nav button.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  .reading-content { line-height: 1.9; font-size: 16px; }
+  .reading-content p { margin-bottom: 16px; }
+  .highlight {
+    background: linear-gradient(120deg, var(--accent-light) 0%, var(--accent-light) 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 40%;
+    background-position: 0 85%;
+    padding: 0 2px; cursor: help; position: relative;
+  }
+  .highlight:hover { background-size: 100% 100%; }
+  .key-concept {
+    background: var(--primary-light); padding: 2px 6px;
+    border-radius: 4px; font-weight: 600; color: var(--primary-dark);
+  }
+  .example-box {
+    background: var(--gray-50); border-left: 3px solid var(--accent);
+    padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .example-box .bad { color: var(--danger); text-decoration: line-through; }
+  .example-box .good { color: var(--success); font-weight: 600; }
+  .tip-box {
+    background: #fef3c7; border: 1px solid #fbbf24;
+    border-radius: 8px; padding: 12px 16px; margin: 12px 0;
+    font-size: 14px;
+  }
+  .tip-box::before { content: '💡 '; }
+
+  /* Notes */
+  .note-area {
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-200);
+  }
+  .note-area textarea {
+    width: 100%; min-height: 80px; padding: 12px;
+    border: 1px solid var(--gray-300); border-radius: 8px;
+    font-size: 14px; font-family: inherit; resize: vertical;
+  }
+  .note-area textarea:focus { outline: none; border-color: var(--primary); }
+  .note-area .note-label { font-size: 13px; color: var(--gray-500); margin-bottom: 6px; }
+  .note-save {
+    margin-top: 8px; padding: 6px 16px; border: none;
+    background: var(--primary); color: white; border-radius: 6px;
+    font-size: 13px; cursor: pointer;
+  }
+  .note-saved { color: var(--success); font-size: 13px; margin-left: 8px; display: none; }
+
+  /* Practice mode */
+  .practice-area {
+    margin-top: 20px; padding: 20px;
+    background: var(--gray-50); border-radius: var(--radius);
+  }
+  .practice-area h3 { margin-bottom: 12px; }
+  .practice-prompt {
+    padding: 16px; background: white; border-radius: 8px;
+    border: 1px solid var(--gray-200); margin-bottom: 12px;
+    font-size: 15px;
+  }
+  .practice-area textarea {
+    width: 100%; min-height: 120px; padding: 12px;
+    border: 1px solid var(--gray-300); border-radius: 8px;
+    font-size: 15px; font-family: inherit; resize: vertical;
+  }
+  .practice-area textarea:focus { outline: none; border-color: var(--primary); }
+  .check-btn {
+    margin-top: 12px; padding: 10px 24px; border: none;
+    background: var(--accent); color: white; font-size: 15px;
+    font-weight: 600; border-radius: 8px; cursor: pointer;
+  }
+  .sample-answer {
+    margin-top: 12px; padding: 16px; background: var(--success-light);
+    border-radius: 8px; display: none; font-size: 14px; line-height: 1.7;
+  }
+  .sample-answer.show { display: block; }
+
+  /* Dashboard stats */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: white; padding: 20px; border-radius: var(--radius);
+    box-shadow: var(--shadow); text-align: center;
+  }
+  .stat-num { font-size: 32px; font-weight: 800; color: var(--primary); }
+  .stat-label { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 22px; }
+    .flashcard-face .term { font-size: 18px; }
+    .nav-btn { padding: 6px 12px; font-size: 13px; }
+  }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 8px 0; display: flex; align-items: flex-start; gap: 10px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .checklist li:last-child { border: none; }
+  .checklist input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 3px; accent-color: var(--primary);
+  }
+  .checklist .item-text { flex: 1; font-size: 15px; }
+  .checklist .item-text.checked { text-decoration: line-through; color: var(--gray-500); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showSection('home')">📊 總覽</button>
+    <button class="nav-btn" onclick="showSection('reading')">📖 閱讀</button>
+    <button class="nav-btn" onclick="showSection('flashcards')">🃏 卡片</button>
+    <button class="nav-btn" onclick="showSection('quiz')">✍️ 測驗</button>
+    <button class="nav-btn" onclick="showSection('practice')">🏋️ 練習</button>
+  </div>
+</nav>
+
+<div class="main">
+
+<!-- ==================== HOME ==================== -->
+<div id="home" class="section active">
+  <div class="hero">
+    <h1>AI 學術英文寫作 學習教材</h1>
+    <p>From Prompts to Paragraphs — 學術寫作五大核心原則</p>
+  </div>
+
+  <div class="progress-text" id="progressText">整體學習進度：0%</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-num" id="statCards">0</div>
+      <div class="stat-label">已掌握卡片</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statQuiz">0%</div>
+      <div class="stat-label">測驗正確率</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statRead">0/5</div>
+      <div class="stat-label">已讀章節</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statPractice">0</div>
+      <div class="stat-label">練習完成數</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 學習清單</h2>
+    <ul class="checklist" id="checklist">
+      <li><input type="checkbox" onchange="updateChecklist(this)"><span class="item-text">閱讀五大核心原則（Evidence-Based, Register, Cautiousness, Clarity, AI 輔助）</span></li>
+      <li><input type="checkbox" onchange="updateChecklist(this)"><span class="item-text">完成所有單字卡片複習</span></li>
+      <li><input type="checkbox" onchange="updateChecklist(this)"><span class="item-text">填空測驗達到 80% 以上正確率</span></li>
+      <li><input type="checkbox" onchange="updateChecklist(this)"><span class="item-text">完成 Paraphrasing 練習</span></li>
+      <li><input type="checkbox" onchange="updateChecklist(this)"><span class="item-text">完成 Hedging Devices 練習</span></li>
+      <li><input type="checkbox" onchange="updateChecklist(this)"><span class="item-text">完成 Clarity & Cohesion 練習</span></li>
+      <li><input type="checkbox" onchange="updateChecklist(this)"><span class="item-text">嘗試寫一段完整的 Literature Review 段落</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🗂️ 課程大綱</h2>
+    <p style="margin-bottom:12px;">本教材根據王子元老師「AI 學術英文寫作公開課」整理，涵蓋學術寫作的五大核心原則：</p>
+    <div style="display:grid; gap:8px;">
+      <div style="padding:12px; background:var(--primary-light); border-radius:8px;">
+        <strong>1. Evidence-Based 基於證據</strong><br>
+        <span style="font-size:14px; color:var(--gray-700);">學術寫作必須基於 facts, data, citations，而非個人觀點。包含文獻引用與 paraphrasing 技巧。</span>
+      </div>
+      <div style="padding:12px; background:#ede9fe; border-radius:8px;">
+        <strong>2. Register 語域/正式度</strong><br>
+        <span style="font-size:14px; color:var(--gray-700);">不只是替換高級詞彙，而是思維層次的提升。Make every word count。</span>
+      </div>
+      <div style="padding:12px; background:var(--accent-light); border-radius:8px;">
+        <strong>3. Cautiousness 謹慎表達</strong><br>
+        <span style="font-size:14px; color:var(--gray-700);">使用 hedging devices 避免以偏概全，知道何時 confident、何時 cautious。</span>
+      </div>
+      <div style="padding:12px; background:var(--success-light); border-radius:8px;">
+        <strong>4. Clarity 清晰度</strong><br>
+        <span style="font-size:14px; color:var(--gray-700);">Unclear writing implies unclear thinking。Pronoun reference、主詞動詞選擇、句子銜接。</span>
+      </div>
+      <div style="padding:12px; background:var(--danger-light); border-radius:8px;">
+        <strong>5. AI 輔助寫作</strong><br>
+        <span style="font-size:14px; color:var(--gray-700);">AI 是 coach 不是 crutch。發展自己的 voice & tone，避免 AI 腔。</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== READING ==================== -->
+<div id="reading" class="section">
+  <div class="card">
+    <h2>📖 分段閱讀與重點標註</h2>
+    <div class="reading-nav" id="readingNav"></div>
+  </div>
+
+  <!-- Chapter 1 -->
+  <div class="card reading-chapter" id="ch1" style="display:none;">
+    <h2>第一章：Evidence-Based 基於證據</h2>
+    <div class="reading-content">
+      <p>學術寫作的第一大特色：<span class="key-concept">It has to be evidence-based</span>。學術寫作必須基於證據，不能只靠個人感覺。</p>
+      <p>Academic writing relies on <span class="highlight" title="事實、數據、引用 — 學術寫作三大基石">facts, data, and citations</span> rather than personal opinions。你必須基於這三個東西來支持你的論點。</p>
+
+      <div class="example-box">
+        <div class="bad">✗ As we all know, grit is important.</div>
+        <div class="bad">✗ It is widely recognized that grit is important.（除非後面給4-5篇相關研究支持）</div>
+        <div class="good">✓ Previous studies have shown that... (Smith, 2020; Lee, 2021)</div>
+        <div class="good">✓ As Park (2022) aptly noted, ...</div>
+      </div>
+
+      <p><strong>Evidence-Based 背後包含的能力：</strong></p>
+      <p>① 判斷文獻立場：哪些<span class="highlight" title="支持、反駁、或與你的論點相關但不直接支持/反駁">支持</span>你的論點？哪些反駁？哪些相關但非直接支持或反駁？</p>
+      <p>② 正確引用：讀到好的文獻後，如何在自己的文章中引用它？</p>
+      <p>③ 合理改寫（Paraphrasing）：不只是換詞，而是真正理解後用自己的話表達。</p>
+
+      <div class="tip-box">
+        教授通常希望你引用近 15-20 年的研究。不要只引用1978年的文獻，要跟上最新研究發現！
+      </div>
+
+      <p><strong>為什麼要讀夠多的 paper？</strong></p>
+      <p><span class="key-concept">It is a conversation</span> — 寫學術論文是在跟 research community 對話。</p>
+      <p><span class="key-concept">Don't reinvent the wheel</span> — 確保你要研究的議題沒有早就被研究過了。</p>
+
+      <div class="example-box">
+        <div class="bad">✗ Little research has been conducted to investigate...（如果其實已經有很多研究）</div>
+        <div class="good">✓ 先做充分的文獻回顧，了解學界現狀後再定位自己的研究。</div>
+      </div>
+
+      <div class="tip-box">
+        引用誰的paper可以看出你的「底子」厚不厚。行內人一看就知道討論某個議題應該cite誰，如果你cite了不相關的人，一看就知道是外行人。
+      </div>
+    </div>
+    <div class="note-area">
+      <div class="note-label">📝 我的筆記</div>
+      <textarea id="note-ch1" placeholder="在這裡記錄你的學習心得..." oninput="saveNote('ch1')"></textarea>
+      <button class="note-save" onclick="saveNoteBtn('ch1')">儲存筆記</button>
+      <span class="note-saved" id="noteSaved-ch1">✓ 已儲存</span>
+    </div>
+  </div>
+
+  <!-- Chapter 2 -->
+  <div class="card reading-chapter" id="ch2" style="display:none;">
+    <h2>第二章：Paraphrasing 改寫技巧</h2>
+    <div class="reading-content">
+      <p>Paraphrasing（改寫）是學術寫作中最困難但最重要的技能之一。</p>
+
+      <p><strong>直接引用 vs 改寫：</strong></p>
+      <p>Direct quote（直接引用）只能佔全文的 <span class="key-concept">5% - 10%</span>。超過就會給人「這個 researcher 很偷懶」的印象。只有當原文寫到天衣無縫，你怎麼改寫都不如原文時，才使用直接引用。</p>
+
+      <div class="example-box">
+        <strong>不合格的改寫（只是表面換詞）：</strong><br>
+        <div class="bad">原文：In an AI-driven world → 改成：In an AI-powered world ❌</div>
+        <br>
+        <strong>合格的改寫需要具備：</strong><br>
+        <div class="good">✓ 獨特的觀點 (unique perspective)</div>
+        <div class="good">✓ 真正的融合 (genuine synthesis)</div>
+        <div class="good">✓ 變化性 (variety) 和你自己的判斷 (judgment)</div>
+      </div>
+
+      <p><strong>改寫五步驟：</strong></p>
+      <p>① <span class="highlight" title="這是最重要的第一步！">了解原文的真正意涵和重點</span> — 原作者想表達什麼？你必須理解透徹。</p>
+      <p>② 了解你自己文章的脈絡 — 這句改寫要放在第幾段？前後文是什麼？</p>
+      <p>③ 思考誰講過類似的話、誰可能反對 — 這是你延伸寫作的切入點。</p>
+      <p>④ 確保改寫不構成抄襲 — 不只是表面換詞。</p>
+      <p>⑤ 為改寫增添你自己的寫作風格。</p>
+
+      <div class="tip-box">
+        英文中很少有真正的同義詞！例如 affect 九成以上是負面影響（"Don't let it affect your mood"），換成 impact on something 看似換句話說，實際上已有意思的偷換。
+      </div>
+
+      <p><strong>劉教授的總結：</strong></p>
+      <p>"Paraphrasing requires that you express something in a way that is <span class="key-concept">consistent with your own writing style</span>, so that the text (1) makes more sense to you, (2) can be incorporated into your paper seamlessly, and (3) won't be considered plagiarized."</p>
+    </div>
+    <div class="note-area">
+      <div class="note-label">📝 我的筆記</div>
+      <textarea id="note-ch2" placeholder="在這裡記錄你的學習心得..." oninput="saveNote('ch2')"></textarea>
+      <button class="note-save" onclick="saveNoteBtn('ch2')">儲存筆記</button>
+      <span class="note-saved" id="noteSaved-ch2">✓ 已儲存</span>
+    </div>
+  </div>
+
+  <!-- Chapter 3 -->
+  <div class="card reading-chapter" id="ch3" style="display:none;">
+    <h2>第三章：Register 語域與正式度</h2>
+    <div class="reading-content">
+      <p>許多人以為學術寫作就是用很難的字，這是<span class="key-concept">大錯特錯</span>。好的學術寫作是<span class="highlight" title="核心概念！">用簡單的方式寫出複雜的思維</span>。</p>
+
+      <div class="example-box">
+        <strong>錯誤理解 Register：</strong><br>
+        <div class="bad">原句：We still don't have a clear idea of why AI makes certain mistakes</div>
+        <div class="bad">錯誤升級：The conundrum of why AI makes certain mistakes as of now defies adequate explanation ❌</div>
+        <div class="good">正確寫法：Little is understood about why AI produces certain errors ✓</div>
+      </div>
+
+      <p><strong>Register 的正確理解：</strong></p>
+      <p>① 不是把 get 換成 obtain、make 換成 produce 就算「正式」。</p>
+      <p>② 真正的 register 在於：你有沒有把每一句話講清楚？<span class="key-concept">Make every word count</span>。</p>
+      <p>③ 了解各學術領域的習慣用字（不同領域用不同的動詞和表達方式）。</p>
+
+      <div class="example-box">
+        <strong>AI 只會讓句子「看起來」正式：</strong><br>
+        <div class="bad">原句：AI is now super big and popular</div>
+        <div class="bad">AI 改寫：AI has become immensely popular and widely influential → sounds fancy, but means nothing! ❌</div>
+        <br>
+        <strong>教授會問的問題：</strong><br>
+        <div class="good">• What do you mean by "big and popular"? In what sense?</div>
+        <div class="good">• In what field is it popular?</div>
+        <div class="good">• What is the purpose of saying this?</div>
+        <div class="good">• Who also shares a similar view?</div>
+        <br>
+        <div class="good">更好的寫法：AI-based solutions are gaining traction in the healthcare sector (Chen, 2014). ✓</div>
+      </div>
+
+      <div class="tip-box">
+        學術寫作常用動詞：argue, suggest, point out, reveal, disclose, contend, maintain — 但不同領域習慣用不同的字，用錯了會讓人覺得你不是 "one of us"。
+      </div>
+
+      <p><strong>不只是換詞表格：</strong></p>
+      <p>一般書籍教的只是語言表面的 register（get → obtain），但真正深度的 register 是思維上的提升：你到底有沒有把每一個用字都讓它有意義？</p>
+    </div>
+    <div class="note-area">
+      <div class="note-label">📝 我的筆記</div>
+      <textarea id="note-ch3" placeholder="在這裡記錄你的學習心得..." oninput="saveNote('ch3')"></textarea>
+      <button class="note-save" onclick="saveNoteBtn('ch3')">儲存筆記</button>
+      <span class="note-saved" id="noteSaved-ch3">✓ 已儲存</span>
+    </div>
+  </div>
+
+  <!-- Chapter 4 -->
+  <div class="card reading-chapter" id="ch4" style="display:none;">
+    <h2>第四章：Cautiousness 謹慎表達</h2>
+    <div class="reading-content">
+      <p>Academic writers are really, really careful about the claims they make. 學者講話時非常小心，因為他們知道永遠會有 <span class="key-concept">exceptions</span>（例外）和無法控制的變因。</p>
+
+      <div class="example-box">
+        <strong>太武斷 vs 謹慎的表達：</strong><br>
+        <div class="bad">✗ Drinking alcohol will cause breast cancer in women.</div>
+        <div class="good">✓ Some studies suggest that drinking alcohol increases the risk of breast cancer.</div>
+        <br>
+        <div class="bad">✗ If you exercise on a regular basis, you will lose weight.</div>
+        <div class="bad">△ If you exercise on a regular basis, you can expect to lose weight.（學術寫作不太用 "you"）</div>
+        <div class="good">✓ Exercising regularly may increase one's chances of losing weight.</div>
+        <div class="good">✓✓ Selen (2019) found that most subjects who successfully lost weight exercised at least twice a week.</div>
+      </div>
+
+      <p><strong>Hedging Devices（避險語言）：</strong></p>
+      <p>學術寫作者常用這些語言工具來保持客觀：</p>
+      <div class="example-box">
+        <div class="good">• one of the key factors（而非 the factor）</div>
+        <div class="good">• A, in one way or another, improves B（而非 A improves B）</div>
+        <div class="good">• may / might / could + 動詞</div>
+        <div class="good">• tend to / appear to / seem to</div>
+        <div class="good">• Some studies suggest that...</div>
+        <div class="good">• The findings indicate that...</div>
+      </div>
+
+      <p><strong>但不是所有東西都要很 cautious！</strong></p>
+      <p>如果所有東西都很 cautious，教授會說：<span class="key-concept">"I don't see your point."</span></p>
+      <p>關鍵能力：知道何時要 <span class="highlight" title="在陳述有充分證據支持的觀點時">confident/certain</span>，何時要 <span class="highlight" title="在提出推論或尚有爭議的觀點時">cautious</span>。</p>
+
+      <div class="tip-box">
+        <strong>Substantiated Personal Insight is the key（有依據的個人見解）</strong>：不是說你不能有 personal insight，但你要確保你的觀點有其他研究者的支持。
+      </div>
+    </div>
+    <div class="note-area">
+      <div class="note-label">📝 我的筆記</div>
+      <textarea id="note-ch4" placeholder="在這裡記錄你的學習心得..." oninput="saveNote('ch4')"></textarea>
+      <button class="note-save" onclick="saveNoteBtn('ch4')">儲存筆記</button>
+      <span class="note-saved" id="noteSaved-ch4">✓ 已儲存</span>
+    </div>
+  </div>
+
+  <!-- Chapter 5 -->
+  <div class="card reading-chapter" id="ch5" style="display:none;">
+    <h2>第五章：Clarity 清晰度與 Sentence Cohesion</h2>
+    <div class="reading-content">
+      <p><span class="key-concept">Unclear writing implies unclear thinking</span> — 寫作不清楚，大多反映的是沒有思考清楚。</p>
+
+      <p><strong>五個幫助你寫作清晰的捷徑 (Heuristics)：</strong></p>
+
+      <p><strong>① Pronoun Reference 代名詞指代</strong></p>
+      <p>學術寫作中，盡量避免模糊的 this/these/which，改用同位語指代：</p>
+      <div class="example-box">
+        <div class="bad">✗ ...which is also noted by Wang (2019).（which 指代不清：可能指 self-perception、social media、或整句話）</div>
+        <div class="good">✓ This study highlights the cognitive benefits of bilingualism. <strong>This advantage</strong> is particularly evident in tasks requiring mental flexibility.</div>
+        <div class="good">使用：this phenomenon / these platforms / the effect / such a long-lasting benefit</div>
+      </div>
+
+      <p><strong>② 關注主詞與動詞</strong></p>
+      <p>主詞和動詞通常 carry 句子裡最重要的資訊。你的重點是什麼，就把它放在主詞的位置。</p>
+      <div class="example-box">
+        <strong>重點是「疫苗類型」：</strong><br>
+        <div class="good">✓ The AstraZeneca vaccine, a viral vector vaccine, was named after...</div>
+        <strong>重點是「命名」：</strong><br>
+        <div class="good">✓ The name "AstraZeneca," given to the viral vector vaccine, was derived from...</div>
+      </div>
+
+      <div class="tip-box">
+        <strong>寫作的秘密</strong>：寫作就是一句話提供條件給另一句話的過程。第二句話寫什麼，要看第一句話有沒有給你條件寫那個。
+      </div>
+
+      <p><strong>③ Language Clarity & Ranking</strong></p>
+      <p>腦中有很多想法時，先把它「拉直」成線性，再排好優先順序。</p>
+      <div class="example-box">
+        <div class="bad">✗ Nutritionists are enabled to collect food data by using IT, measuring the nutritional value of food.（不知道在說什麼）</div>
+        <div class="good">✓ With information technology, nutritionists are able to collect food data and understand the nutritional value of food with greater efficiency.</div>
+      </div>
+
+      <p><strong>④ 搞清楚字與字的關係</strong></p>
+      <p>很多人亂用學術用詞。例如標題寫 "relationship between A and B"，但研究是質化分析，質化分析不能標題有 relationship。</p>
+      <div class="example-box">
+        <div class="good">• X is conducive to Y（X 促進 Y）</div>
+        <div class="good">• X is linked with Y（X 與 Y 有關聯）</div>
+        <div class="good">• X is a function of Y（X 是 Y 的函數/取決於 Y）</div>
+        <div class="good">• X has bearing on Y（X 對 Y 有影響）</div>
+      </div>
+
+      <p><strong>⑤ Sentence Cohesion 句子銜接</strong></p>
+      <p>寫完第一句話後，第二句話可以是：</p>
+      <div class="example-box">
+        <div class="good">原因 → 相關細節 → 引用/paraphrase → 相關論點 → 類比 → 對比 → 例子 → 因果關係 → 程度 → implication（可能造成的影響）</div>
+      </div>
+    </div>
+    <div class="note-area">
+      <div class="note-label">📝 我的筆記</div>
+      <textarea id="note-ch5" placeholder="在這裡記錄你的學習心得..." oninput="saveNote('ch5')"></textarea>
+      <button class="note-save" onclick="saveNoteBtn('ch5')">儲存筆記</button>
+      <span class="note-saved" id="noteSaved-ch5">✓ 已儲存</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FLASHCARDS ==================== -->
+<div id="flashcards" class="section">
+  <div class="card">
+    <h2>🃏 重點概念卡片複習</h2>
+    <p style="color:var(--gray-500); font-size:14px; margin-bottom:8px;">點擊卡片翻面查看解釋，標記「已掌握」或「需複習」</p>
+
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="flashcard-face flashcard-front">
+          <div class="label">概念</div>
+          <div class="term" id="fcFrontTerm"></div>
+          <div class="detail" id="fcFrontDetail"></div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="label">解釋與例句</div>
+          <div class="term" id="fcBackTerm"></div>
+          <div class="detail" id="fcBackDetail"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flashcard-hint">👆 點擊卡片翻面</div>
+    <div class="flashcard-nav">
+      <button class="btn-dontknow" onclick="markCard(false)">❌ 需複習</button>
+      <button class="btn-prev" onclick="prevCard()">◀</button>
+      <span class="flashcard-counter" id="fcCounter">1 / 20</span>
+      <button class="btn-next" onclick="nextCard()">▶</button>
+      <button class="btn-know" onclick="markCard(true)">✅ 已掌握</button>
+    </div>
+
+    <div style="margin-top:20px; text-align:center;">
+      <button onclick="filterCards('all')" class="nav-btn active" id="filterAll">全部</button>
+      <button onclick="filterCards('unknown')" class="nav-btn" id="filterUnknown">需複習</button>
+      <button onclick="filterCards('known')" class="nav-btn" id="filterKnown">已掌握</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== QUIZ ==================== -->
+<div id="quiz" class="section">
+  <div class="card">
+    <h2>✍️ 填空與選擇題測驗</h2>
+    <p style="color:var(--gray-500); font-size:14px; margin-bottom:16px;">根據課程內容作答，測試你的理解程度</p>
+    <div id="quizContainer"></div>
+    <div class="quiz-score" id="quizScore" style="display:none;">
+      <div class="score-label">你的分數</div>
+      <div class="score-num" id="scoreNum">0%</div>
+      <div style="margin-top:8px; color:var(--gray-500);" id="scoreDetail"></div>
+      <button class="btn-restart" onclick="restartQuiz()">重新測驗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PRACTICE ==================== -->
+<div id="practice" class="section">
+  <div class="card">
+    <h2>🏋️ 寫作練習</h2>
+    <p style="color:var(--gray-500); font-size:14px; margin-bottom:16px;">實際動手練習，提升學術寫作能力</p>
+  </div>
+
+  <!-- Practice 1: Paraphrasing -->
+  <div class="card">
+    <h3>練習一：Paraphrasing 改寫練習</h3>
+    <div class="practice-area">
+      <div class="practice-prompt">
+        <strong>原文：</strong><br>
+        "Social media platforms have fundamentally altered how adolescents interact with their peers, leading to significant changes in social dynamics and self-perception among young users." (Kim, 2023)
+      </div>
+      <p style="font-size:14px; color:var(--gray-500); margin-bottom:8px;">請用你自己的話改寫上面這段文字，注意：(1) 理解原意 (2) 用自己的寫作風格 (3) 不只是換詞</p>
+      <textarea id="practice1" placeholder="在這裡寫下你的改寫..."></textarea>
+      <button class="check-btn" onclick="showAnswer(1)">查看參考答案</button>
+      <div class="sample-answer" id="answer1">
+        <strong>參考改寫：</strong><br><br>
+        "The emergence of social media has reshaped peer interactions among teenagers, with notable implications for both group relationships and individual self-image (Kim, 2023)."<br><br>
+        <strong>改寫要點：</strong><br>
+        • "fundamentally altered" → "reshaped"（不只是換詞，整個句型改變）<br>
+        • "adolescents" → "teenagers"<br>
+        • 將兩個結果 ("social dynamics" & "self-perception") 用不同方式重新表達<br>
+        • 保持原意但融入自己的表達方式
+      </div>
+    </div>
+  </div>
+
+  <!-- Practice 2: Hedging -->
+  <div class="card">
+    <h3>練習二：Hedging Devices 謹慎表達</h3>
+    <div class="practice-area">
+      <div class="practice-prompt">
+        <strong>任務：</strong>請將以下過於武斷的句子改寫為合適的學術表達<br><br>
+        1. "Online learning is better than traditional classroom education."<br>
+        2. "AI will replace all human writers in the next decade."<br>
+        3. "Exercise prevents depression."
+      </div>
+      <textarea id="practice2" placeholder="在這裡寫下你的改寫..."></textarea>
+      <button class="check-btn" onclick="showAnswer(2)">查看參考答案</button>
+      <div class="sample-answer" id="answer2">
+        <strong>參考答案：</strong><br><br>
+        1. "Some studies suggest that online learning <strong>may offer certain advantages</strong> over traditional classroom education, particularly in terms of flexibility and accessibility (Wang, 2022)."<br><br>
+        2. "While AI-generated text has shown <strong>considerable improvement</strong>, it <strong>remains unclear whether</strong> such technology <strong>could fully</strong> substitute human writers within the foreseeable future."<br><br>
+        3. "Regular physical exercise <strong>has been associated with</strong> a <strong>reduced risk of</strong> depressive symptoms (Lee et al., 2021), <strong>though the relationship may vary</strong> depending on individual factors."<br><br>
+        <strong>使用的 hedging devices：</strong> may, suggest, certain, remains unclear, could, has been associated with, reduced risk of, though...may vary
+      </div>
+    </div>
+  </div>
+
+  <!-- Practice 3: Clarity -->
+  <div class="card">
+    <h3>練習三：Clarity & Cohesion 清晰度練習</h3>
+    <div class="practice-area">
+      <div class="practice-prompt">
+        <strong>任務：</strong>請改善以下段落的清晰度和銜接性<br><br>
+        "AI is very important nowadays. It changes many things. This is related to education. They use it in schools. It is beneficial."
+      </div>
+      <textarea id="practice3" placeholder="在這裡寫下你的改寫..."></textarea>
+      <button class="check-btn" onclick="showAnswer(3)">查看參考答案</button>
+      <div class="sample-answer" id="answer3">
+        <strong>參考改寫：</strong><br><br>
+        "Artificial intelligence has emerged as a transformative force in contemporary education (Smith, 2023). <strong>This technological advancement</strong> has prompted educators to integrate AI-powered tools into classroom instruction, ranging from personalized learning platforms to automated assessment systems. <strong>Such integration</strong> has demonstrated measurable benefits, including improved student engagement and more efficient feedback delivery (Chen & Liu, 2024)."<br><br>
+        <strong>改善重點：</strong><br>
+        • 用具體的同位語取代模糊的 it/this/they<br>
+        • "This technological advancement" 明確指代 AI<br>
+        • "Such integration" 明確指代前述的整合行為<br>
+        • 每句話提供條件給下一句話<br>
+        • 添加了具體細節和引用支持
+      </div>
+    </div>
+  </div>
+
+  <!-- Practice 4: Full paragraph -->
+  <div class="card">
+    <h3>練習四：綜合練習 — 寫一段 Literature Review</h3>
+    <div class="practice-area">
+      <div class="practice-prompt">
+        <strong>任務：</strong>請為以下研究主題寫一段文獻回顧開頭（約5-8句話）：<br><br>
+        <strong>主題：</strong>社群媒體對大學生心理健康的影響<br><br>
+        <strong>要求：</strong><br>
+        ✅ Evidence-based（引用至少2個假想的研究）<br>
+        ✅ 適當的 Register（學術語域）<br>
+        ✅ 使用 Hedging devices<br>
+        ✅ 清晰的 Pronoun reference<br>
+        ✅ 良好的 Sentence cohesion
+      </div>
+      <textarea id="practice4" placeholder="在這裡寫下你的段落..." style="min-height:180px;"></textarea>
+      <button class="check-btn" onclick="showAnswer(4)">查看參考範例</button>
+      <div class="sample-answer" id="answer4">
+        <strong>參考範例：</strong><br><br>
+        "The relationship between social media usage and mental health outcomes among university students has attracted considerable scholarly attention in recent years (Park & Lee, 2022; Williams, 2023). While some researchers argue that social media platforms facilitate social connectedness and peer support (Park & Lee, 2022), others contend that excessive engagement with <strong>these platforms</strong> may contribute to heightened levels of anxiety and diminished self-esteem (Williams, 2023). <strong>This discrepancy</strong> in findings suggests that the impact of social media on psychological well-being is not straightforward but rather mediated by factors such as usage patterns, content type, and individual predispositions (Chen et al., 2024). Despite the growing body of literature on <strong>this subject</strong>, relatively few studies have examined how specific platform features — such as algorithmic content curation — shape the mental health experiences of college-aged users. <strong>This gap</strong> in the existing research underscores the need for more nuanced investigations into the mechanisms through which social media influences student well-being."<br><br>
+        <strong>五大原則對照：</strong><br>
+        📚 Evidence-based: 引用了 Park & Lee, Williams, Chen et al.<br>
+        🎯 Register: 用學術語域但不過度華麗<br>
+        🛡️ Cautiousness: may contribute, suggests, is not straightforward<br>
+        🔍 Clarity: "these platforms", "this discrepancy", "this subject", "this gap"<br>
+        🔗 Cohesion: 每句話自然銜接，提供條件給下一句
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<script>
+// ==================== DATA ====================
+
+const flashcardData = [
+  { front: "Evidence-Based", frontDetail: "學術寫作第一大原則", back: "基於證據", backDetail: "學術寫作必須基於 facts, data, citations，而非個人觀點。每個論點都需要研究文獻的支持。" },
+  { front: "Paraphrasing", frontDetail: "改寫技巧", back: "用自己的話重述", backDetail: "不只是換同義詞！需要：(1)理解原意 (2)融入自己文章脈絡 (3)保持自己的寫作風格 (4)不構成抄襲。直接引用只能佔5-10%。" },
+  { front: "Register", frontDetail: "語域/正式度", back: "思維層次的提升", backDetail: "不是把 get→obtain 就叫學術。真正的 register 是讓每個字都有意義 (Make every word count)，用簡單的方式寫出複雜的思維。" },
+  { front: "Cautiousness", frontDetail: "謹慎表達", back: "避免以偏概全", backDetail: "使用 hedging devices (may, suggest, indicate) 保持客觀。但也要知道何時 confident、何時 cautious，不然教授會說 'I don't see your point'。" },
+  { front: "Clarity", frontDetail: "清晰度", back: "Unclear writing = unclear thinking", backDetail: "五個捷徑：pronoun reference、主詞動詞選擇、language ranking、字詞關係、sentence cohesion。" },
+  { front: "Hedging Devices", frontDetail: "避險語言工具", back: "保持學術客觀性的語言", backDetail: "例：may/might/could, tend to, appear to, suggest that, one of the key factors, in one way or another。避免 sweeping conclusions（以偏概全的結論）。" },
+  { front: "Synthesis", frontDetail: "文獻綜合", back: "融合多篇文獻", backDetail: "不只是列出一篇篇文獻，而是將多個研究發現整合在一起，找出共同點、差異點和研究缺口。Synthesis paper 是一種重要的學術寫作類型。" },
+  { front: "Pronoun Reference", frontDetail: "代名詞指代", back: "使用明確的同位語", backDetail: "避免模糊的 this/it/which，改用：this phenomenon, these platforms, the effect, such a benefit, this advantage。讓讀者永遠知道你在指什麼。" },
+  { front: "Sentence Cohesion", frontDetail: "句子銜接", back: "句子間的邏輯連接", backDetail: "寫作就是「一句話提供條件給另一句話」的過程。第二句可以寫：原因、細節、引用、對比、例子、因果、程度、implication。" },
+  { front: "Coach vs Crutch", frontDetail: "AI 的正確角色", back: "教練 vs 拐杖", backDetail: "AI 應該是 coach（教練），幫助你學習和進步；不是 crutch（拐杖），讓你依賴後忘記本質能力。" },
+  { front: "Direct Quote", frontDetail: "直接引用", back: "原文照搬只能佔5-10%", backDetail: "只有當原文寫到天衣無縫、你怎麼改都不如原文時才用 direct quote。過多直接引用會給人「偷懶」的印象。" },
+  { front: "Don't Reinvent the Wheel", frontDetail: "不要重新發明輪子", back: "充分了解現有研究", backDetail: "確保你要研究的議題不是早就被研究過的。要讀 state-of-the-art articles（有影響力的新文獻）。" },
+  { front: "Substantiated Personal Insight", frontDetail: "有依據的個人見解", back: "有其他研究支持的觀點", backDetail: "不是不能有 personal insight，但要確保你的見解有其他研究者的支持 (substantiated = supported)。" },
+  { front: "Make Every Word Count", frontDetail: "讓每個字都有意義", back: "學術寫作的核心精神", backDetail: "不是用華麗的詞藻，而是每個用字都精準、必要。問自己：這個字/詞在這裡的目的是什麼？" },
+  { front: "Citation Format", frontDetail: "引用格式", back: "不同領域用不同格式", backDetail: "心理學/社科 → APA，文學 → MLA，醫學 → Vancouver。但領域差異不只是格式不同，連寫作風格也不一樣。" },
+  { front: "affect vs impact", frontDetail: "常見用字陷阱", back: "affect 九成是負面影響", backDetail: "Don't let it affect your mood（不要讓它影響你的心情）→ affect 通常是負面的。換成 have an impact on 看似同義，但語義已經偷換了。" },
+  { front: "errors vs mistakes", frontDetail: "學術用字精確度", back: "在 AI 研究中用 errors", backDetail: "在特定學術領域中，用字要精確。AI 研究中的「錯誤」應該用 errors，不是 mistakes。了解領域慣用詞很重要。" },
+  { front: "Sweeping Conclusions", frontDetail: "以偏概全的結論", back: "學術寫作中的大忌", backDetail: "例：'AI will replace all jobs' — 這種過於武斷的結論在學術寫作中是不被接受的。需要使用 hedging 來緩和語氣。" },
+  { front: "Literature Review", frontDetail: "文獻回顧", back: "統整現有研究的寫作", backDetail: "從150字高中作文跳到1500-2500字的文獻回顧是一大挑戰。需要系統性地閱讀、整理、改寫並融合多篇文獻。" },
+  { front: "Reverse Editing", frontDetail: "反向編輯", back: "去除 AI 腔", backDetail: "現在很多人寫出來都像 AI 寫的。Reverse editing 是發展自己的 voice & tone 的技巧，讓你的學術寫作有個人特色而非 AI 味。" },
+];
+
+const quizData = [
+  {
+    question: "學術寫作必須基於 _____ , 而非個人觀點。",
+    blank: "facts, data, and citations",
+    options: ["facts, data, and citations", "personal experience and intuition", "popular opinions and trends", "creative imagination and stories"],
+    correct: 0,
+    explanation: "Academic writing relies on facts, data, and citations rather than personal opinions。這是學術寫作的第一大原則 Evidence-Based。"
+  },
+  {
+    question: "Direct quote（直接引用）在學術論文中應該只佔全文的 _____ 。",
+    blank: "5% - 10%",
+    options: ["5% - 10%", "20% - 30%", "50% 以上", "越多越好"],
+    correct: 0,
+    explanation: "直接引用只能佔5-10%。超過會給人「這個 researcher 很偷懶」的印象。只有原文寫到天衣無縫時才用。"
+  },
+  {
+    question: "「不要重新發明輪子」(Don't reinvent the wheel) 在學術寫作中的意思是？",
+    blank: "",
+    options: ["先充分了解現有研究，避免研究已經被做過的題目", "不要使用創新的研究方法", "只引用經典文獻", "避免使用比喻"],
+    correct: 0,
+    explanation: "要讀 state-of-the-art articles，確保你的研究議題不是早就被研究過的。教授最怕看到學生說 'little research has been conducted' 但其實已經有大量研究。"
+  },
+  {
+    question: "以下哪個改寫方式是「不合格」的 paraphrasing？",
+    blank: "",
+    options: ["只是把 AI-driven 換成 AI-powered", "用自己的寫作風格重新表達", "融入自己文章的脈絡中", "添加自己的判斷和分析"],
+    correct: 0,
+    explanation: "只是把 'AI-driven' 換成 'AI-powered' 不算改寫。合格的改寫需要獨特觀點、真正融合、變化性和自己的判斷。"
+  },
+  {
+    question: "學術寫作的 Register（語域）真正重要的是？",
+    blank: "",
+    options: ["Make every word count — 讓每個字都有意義", "盡量使用最難的詞彙", "句子越長越好", "避免使用所有簡單的詞"],
+    correct: 0,
+    explanation: "Register 不是把 get 換成 obtain。好的學術寫作是「用簡單的方式寫出複雜的思維」，讓每個字都精準必要。"
+  },
+  {
+    question: "「Little is understood about why AI produces certain errors」比起原句好在哪裡？",
+    blank: "",
+    options: ["避免了 'we' 且用了精確的學術用字 'errors'", "用了更華麗的詞彙", "句子更長更複雜", "完全改變了原來的意思"],
+    correct: 0,
+    explanation: "原句 'We still don't have a clear idea of why AI makes certain mistakes' — 學術寫作不用 'we' 開頭，且在 AI 研究中「錯誤」應用 errors 而非 mistakes。"
+  },
+  {
+    question: "以下哪個是正確使用 Hedging device 的例子？",
+    blank: "",
+    options: ["Some studies suggest that drinking alcohol increases the risk of breast cancer.", "Drinking alcohol will cause breast cancer in women.", "Everyone knows that alcohol causes cancer.", "It is absolutely certain that alcohol leads to cancer."],
+    correct: 0,
+    explanation: "使用 'some studies suggest' 和 'increases the risk of' 是正確的 hedging，避免了過於武斷的因果宣稱。"
+  },
+  {
+    question: "「Substantiated personal insight」的意思是？",
+    blank: "",
+    options: ["有其他研究支持的個人見解", "純粹的個人感覺", "未經驗證的直覺", "只陳述事實不加觀點"],
+    correct: 0,
+    explanation: "不是說不能有 personal insight，但要確保你的見解有其他研究者的支持 (substantiated = supported)。這是平衡客觀性和個人觀點的關鍵。"
+  },
+  {
+    question: "在學術寫作中，_____ implies unclear thinking。",
+    blank: "unclear writing",
+    options: ["unclear writing", "simple writing", "short writing", "cautious writing"],
+    correct: 0,
+    explanation: "Unclear writing implies unclear thinking — 寫作不清楚，大多反映的是思考不清楚。這是 Clarity 原則的核心概念。"
+  },
+  {
+    question: "為什麼學術寫作中要避免模糊的 this/it/which？",
+    blank: "",
+    options: ["因為讀者可能不知道指代什麼，造成理解困難", "因為這些詞太簡單不夠學術", "因為學術論文有字數要求", "因為教授不喜歡這些詞"],
+    correct: 0,
+    explanation: "模糊的代名詞會造成指代不清。應該用同位語如 'this phenomenon', 'these platforms', 'this advantage' 來明確指代。"
+  },
+  {
+    question: "affect 和 impact 的差異是什麼？",
+    blank: "",
+    options: ["affect 九成以上是負面影響，impact 則更中性", "兩者完全相同可以互換", "impact 是負面的，affect 是正面的", "affect 比 impact 更正式"],
+    correct: 0,
+    explanation: "affect 九成以上是負面影響 (Don't let it affect your mood)。把 affect 換成 have an impact on 看似同義，但語義已經偷換了。英文中很少有真正的同義詞！"
+  },
+  {
+    question: "AI 在學術寫作學習中應該扮演的角色是？",
+    blank: "",
+    options: ["Coach（教練）— 幫助學習和進步", "Crutch（拐杖）— 讓你依賴", "Replacement（替代品）— 完全取代人類寫作", "Decoration（裝飾）— 讓文章看起來更花俏"],
+    correct: 0,
+    explanation: "AI 應該是 coach（教練），幫助你學習和進步；不是 crutch（拐杖），用久了就忘記本質能力了。"
+  },
+  {
+    question: "寫作的「秘密」是什麼？",
+    blank: "",
+    options: ["一句話提供條件給另一句話的過程", "盡量使用最複雜的句型", "每句話都要引用文獻", "模仿母語人士的寫法"],
+    correct: 0,
+    explanation: "寫作就是一句話提供條件給另一句話的過程。第四句可以寫什麼，要看第三句有沒有給你條件寫那個。"
+  },
+  {
+    question: "選擇模仿的學術寫作對象時，為什麼亞洲教授可能比母語教授更適合？",
+    blank: "",
+    options: ["可以看到他們的學習軌跡和寫作技巧的痕跡", "因為他們寫得更簡單", "因為他們用中文思考", "因為文章比較短"],
+    correct: 0,
+    explanation: "亞洲教授的母語不是英文，但能在頂尖大學當正教授，代表他們的寫作學習軌跡是你比較容易看到和模仿的。純母語人士的風格反而很難模仿。"
+  },
+  {
+    question: "Reverse editing 的目的是什麼？",
+    blank: "",
+    options: ["去除 AI 腔，發展自己的寫作聲音和風格", "把文章倒著寫一遍", "刪除所有 AI 生成的內容", "把英文翻回中文"],
+    correct: 0,
+    explanation: "現在很多人寫出來都像 AI 寫的。Reverse editing 是發展自己的 voice & tone 的技巧，讓學術寫作有個人特色而非 AI 味。"
+  }
+];
+
+// ==================== STATE ====================
+let currentCard = 0;
+let cardStatus = {}; // { index: 'known'|'unknown' }
+let cardFilter = 'all';
+let filteredIndices = [];
+let quizAnswered = {};
+let readChapters = {};
+let practiceCompleted = {};
+
+// ==================== NAVIGATION ====================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (id === 'quiz' && document.getElementById('quizContainer').innerHTML === '') renderQuiz();
+  updateProgress();
+}
+
+// ==================== FLASHCARDS ====================
+function initFlashcards() {
+  filterCards('all');
+}
+
+function filterCards(mode) {
+  cardFilter = mode;
+  document.getElementById('filterAll').classList.toggle('active', mode === 'all');
+  document.getElementById('filterUnknown').classList.toggle('active', mode === 'unknown');
+  document.getElementById('filterKnown').classList.toggle('active', mode === 'known');
+
+  if (mode === 'all') filteredIndices = flashcardData.map((_, i) => i);
+  else if (mode === 'known') filteredIndices = flashcardData.map((_, i) => i).filter(i => cardStatus[i] === 'known');
+  else filteredIndices = flashcardData.map((_, i) => i).filter(i => cardStatus[i] !== 'known');
+
+  if (filteredIndices.length === 0) {
+    filteredIndices = flashcardData.map((_, i) => i);
+    cardFilter = 'all';
+    document.getElementById('filterAll').classList.add('active');
+    document.getElementById('filterUnknown').classList.remove('active');
+    document.getElementById('filterKnown').classList.remove('active');
+  }
+  currentCard = 0;
+  renderCard();
+}
+
+function renderCard() {
+  const idx = filteredIndices[currentCard];
+  const data = flashcardData[idx];
+  document.getElementById('fcFrontTerm').textContent = data.front;
+  document.getElementById('fcFrontDetail').textContent = data.frontDetail;
+  document.getElementById('fcBackTerm').textContent = data.back;
+  document.getElementById('fcBackDetail').textContent = data.backDetail;
+  document.getElementById('fcCounter').textContent = `${currentCard + 1} / ${filteredIndices.length}`;
+  document.getElementById('flashcard').classList.remove('flipped');
+}
+
+function flipCard() {
+  document.getElementById('flashcard').classList.toggle('flipped');
+}
+
+function nextCard() {
+  if (currentCard < filteredIndices.length - 1) { currentCard++; renderCard(); }
+}
+function prevCard() {
+  if (currentCard > 0) { currentCard--; renderCard(); }
+}
+
+function markCard(known) {
+  const idx = filteredIndices[currentCard];
+  cardStatus[idx] = known ? 'known' : 'unknown';
+  updateProgress();
+  if (currentCard < filteredIndices.length - 1) { currentCard++; renderCard(); }
+  else { renderCard(); }
+}
+
+// ==================== QUIZ ====================
+function renderQuiz() {
+  const container = document.getElementById('quizContainer');
+  let html = '';
+  quizData.forEach((q, i) => {
+    const blankText = q.blank ? q.question.replace(q.blank, `<span class="blank">${'_'.repeat(Math.max(6, q.blank.length))}</span>`) : q.question;
+    html += `<div class="quiz-question" id="qq${i}">
+      <div class="q-text">${i+1}. ${blankText}</div>
+      <div class="options" id="opts${i}">
+        ${q.options.map((opt, j) => `<button class="option-btn" onclick="answerQuiz(${i},${j})">${String.fromCharCode(65+j)}. ${opt}</button>`).join('')}
+      </div>
+      <div class="explanation" id="exp${i}">${q.explanation}</div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function answerQuiz(qi, ai) {
+  if (quizAnswered[qi] !== undefined) return;
+  quizAnswered[qi] = ai;
+  const q = quizData[qi];
+  const btns = document.querySelectorAll(`#opts${qi} .option-btn`);
+  btns.forEach((btn, j) => {
+    btn.classList.add('disabled');
+    if (j === q.correct) btn.classList.add('correct');
+    if (j === ai && ai !== q.correct) btn.classList.add('wrong');
+  });
+  const exp = document.getElementById(`exp${qi}`);
+  exp.classList.add('show', ai === q.correct ? 'correct-exp' : 'wrong-exp');
+
+  // Check if all answered
+  if (Object.keys(quizAnswered).length === quizData.length) {
+    const correct = Object.entries(quizAnswered).filter(([qi, ai]) => ai === quizData[qi].correct).length;
+    const pct = Math.round(correct / quizData.length * 100);
+    document.getElementById('quizScore').style.display = 'block';
+    document.getElementById('scoreNum').textContent = pct + '%';
+    document.getElementById('scoreDetail').textContent = `${correct} / ${quizData.length} 題正確`;
+  }
+  updateProgress();
+}
+
+function restartQuiz() {
+  quizAnswered = {};
+  document.getElementById('quizScore').style.display = 'none';
+  renderQuiz();
+  updateProgress();
+}
+
+// ==================== READING ====================
+function initReading() {
+  const chapters = ['Evidence-Based', 'Paraphrasing', 'Register', 'Cautiousness', 'Clarity & Cohesion'];
+  const nav = document.getElementById('readingNav');
+  nav.innerHTML = chapters.map((ch, i) =>
+    `<button onclick="showChapter(${i+1})" id="chBtn${i+1}">${i+1}. ${ch}</button>`
+  ).join('');
+  showChapter(1);
+}
+
+function showChapter(n) {
+  document.querySelectorAll('.reading-chapter').forEach(c => c.style.display = 'none');
+  document.getElementById(`ch${n}`).style.display = 'block';
+  document.querySelectorAll('.reading-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(`chBtn${n}`).classList.add('active');
+  readChapters[n] = true;
+  // Load saved notes
+  const note = localStorage.getItem(`note-ch${n}`);
+  if (note) document.getElementById(`note-ch${n}`).value = note;
+  updateProgress();
+}
+
+// ==================== NOTES ====================
+function saveNote(ch) {
+  const val = document.getElementById(`note-${ch}`).value;
+  localStorage.setItem(`note-${ch}`, val);
+}
+
+function saveNoteBtn(ch) {
+  saveNote(ch);
+  const saved = document.getElementById(`noteSaved-${ch}`);
+  saved.style.display = 'inline';
+  setTimeout(() => saved.style.display = 'none', 2000);
+}
+
+// ==================== PRACTICE ====================
+function showAnswer(n) {
+  const el = document.getElementById(`answer${n}`);
+  el.classList.toggle('show');
+  if (el.classList.contains('show')) {
+    practiceCompleted[n] = true;
+    updateProgress();
+  }
+}
+
+// ==================== CHECKLIST ====================
+function updateChecklist(cb) {
+  const text = cb.parentElement.querySelector('.item-text');
+  text.classList.toggle('checked', cb.checked);
+  updateProgress();
+}
+
+// ==================== PROGRESS ====================
+function updateProgress() {
+  // Cards
+  const knownCount = Object.values(cardStatus).filter(v => v === 'known').length;
+  document.getElementById('statCards').textContent = `${knownCount}/${flashcardData.length}`;
+
+  // Quiz
+  const answered = Object.keys(quizAnswered).length;
+  if (answered > 0) {
+    const correct = Object.entries(quizAnswered).filter(([qi, ai]) => ai === quizData[qi].correct).length;
+    document.getElementById('statQuiz').textContent = Math.round(correct / answered * 100) + '%';
+  }
+
+  // Reading
+  const readCount = Object.keys(readChapters).length;
+  document.getElementById('statRead').textContent = `${readCount}/5`;
+
+  // Practice
+  const practiceCount = Object.keys(practiceCompleted).length;
+  document.getElementById('statPractice').textContent = practiceCount;
+
+  // Overall
+  const cardPct = knownCount / flashcardData.length;
+  const quizPct = answered / quizData.length;
+  const readPct = readCount / 5;
+  const pracPct = practiceCount / 4;
+  const total = Math.round((cardPct * 0.25 + quizPct * 0.25 + readPct * 0.25 + pracPct * 0.25) * 100);
+  document.getElementById('progressFill').style.width = total + '%';
+  document.getElementById('progressText').textContent = `整體學習進度：${total}%`;
+}
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', () => {
+  initFlashcards();
+  initReading();
+  updateProgress();
+});
+</script>
+</body>
+</html>
